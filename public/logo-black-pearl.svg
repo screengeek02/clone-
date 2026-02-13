@@ -1,0 +1,16 @@
+<svg width="360" height="90" viewBox="0 0 360 90" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Black Pearl Gift Shop Punta Cana">
+  <defs>
+    <linearGradient id="g1" x1="0" x2="1">
+      <stop offset="0" stop-color="#0b3b75"/>
+      <stop offset="1" stop-color="#145ea8"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0" x2="1">
+      <stop offset="0" stop-color="#f6b200"/>
+      <stop offset="1" stop-color="#ff8a00"/>
+    </linearGradient>
+  </defs>
+  <rect width="360" height="90" rx="16" fill="rgba(255,255,255,0.0)"/>
+  <text x="14" y="38" font-size="42" font-family="Brush Script MT, Segoe Script, cursive" fill="url(#g1)">Black</text>
+  <text x="118" y="68" font-size="56" font-family="Brush Script MT, Segoe Script, cursive" fill="url(#g2)">Pearl</text>
+  <text x="18" y="80" font-size="13" letter-spacing="3" font-family="Arial, sans-serif" fill="#c7dcff">GIFT SHOP · PUNTA CANA</text>
+</svg>
