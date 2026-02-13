@@ -7,7 +7,7 @@ const navGroups = {
 function headerTemplate(){
   const groups = Object.entries(navGroups).map(([title, links]) => `
     <div class="nav-group">
-      <button aria-haspopup="true">${title}</button>
+      <button aria-haspopup="true" aria-expanded="false">${title}</button>
       <div class="dropdown panel">${links.map(([n,h]) => `<a href="${h}">${n}</a>`).join('')}</div>
     </div>`).join('');
 
@@ -29,6 +29,7 @@ function mountShell(){
   const mobile = document.getElementById('mobileMenu');
   const open = document.getElementById('openMenu');
   const close = document.getElementById('closeMenu');
+  const desktopGroups = document.querySelectorAll('.nav-group');
 
   function trap(e){
     if(!mobile.classList.contains('open')) return;
@@ -40,9 +41,45 @@ function mountShell(){
       if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
     }
   }
+
   open?.addEventListener('click', ()=>{ mobile.classList.add('open'); mobile.querySelector('button,a')?.focus(); });
   close?.addEventListener('click', ()=>mobile.classList.remove('open'));
   document.addEventListener('keydown', trap);
+
+  desktopGroups.forEach((group) => {
+    let timer;
+    const trigger = group.querySelector('button');
+
+    const openGroup = () => {
+      clearTimeout(timer);
+      desktopGroups.forEach((g) => {
+        g.classList.remove('open');
+        g.querySelector('button')?.setAttribute('aria-expanded', 'false');
+      });
+      group.classList.add('open');
+      trigger?.setAttribute('aria-expanded', 'true');
+    };
+
+    const closeGroup = () => {
+      timer = setTimeout(() => {
+        group.classList.remove('open');
+        trigger?.setAttribute('aria-expanded', 'false');
+      }, 280);
+    };
+
+    group.addEventListener('mouseenter', openGroup);
+    group.addEventListener('mouseleave', closeGroup);
+    trigger?.addEventListener('focus', openGroup);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!(e.target instanceof Element) || !e.target.closest('.nav-group')) {
+      desktopGroups.forEach((group) => {
+        group.classList.remove('open');
+        group.querySelector('button')?.setAttribute('aria-expanded', 'false');
+      });
+    }
+  });
 }
 
 function initFAQ(){
