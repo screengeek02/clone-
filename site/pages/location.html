@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Location | Neighborhood Auto Care</title>
+    <meta name="description" content="Find our auto repair shop location, hours, and map details." />
+    <link rel="stylesheet" href="../assets/css/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <div class="utility-bar"><div class="container utility-inner"><div class="utility-item"><strong>Neighborhood Auto Care</strong></div><div class="utility-item">123 Main Street, Your City, ST 00000</div><div class="utility-item">Call: <a class="utility-phone" href="tel:+15555550199">(555) 555-0199</a></div><div class="utility-item hours"><details><summary>Opening Hours</summary><p>Mon–Fri: 8:00 AM – 5:30 PM<br />Sat/Sun: Closed</p></details></div></div></div>
+    <header class="site-header">
+      <div class="container nav-wrap">
+        <a class="brand" href="../index.html">Neighborhood Auto Care</a>
+        <button class="menu-toggle" data-menu-toggle aria-expanded="false" aria-controls="primary-nav">Menu</button>
+        <nav id="primary-nav" class="nav" data-main-nav aria-label="Main navigation">
+          <ul class="nav-list">
+            <li><a class="nav-link" href="location.html">Our Shop</a></li>
+            <li><a class="nav-link" href="services.html">Auto Repair</a></li>
+            <li><a class="nav-link" href="../index.html#tips">Repair Tips</a></li>
+            <li><a class="nav-link" href="contact.html">Contact Us</a></li>
+            <li class="nav-cta"><a class="cta-btn" href="appointment-request.html">Appointment Request</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <section class="page-hero"><div class="container"><h1>Visit Our Shop</h1><p>Easy-to-find location with convenient weekday service hours.</p></div></section>
+      <section class="section">
+        <div class="container grid-3">
+          <article class="card">
+            <h2>Address</h2>
+            <p>123 Main Street<br />Your City, ST 00000</p>
+            <p><a href="tel:+15555550199">(555) 555-0199</a></p>
+          </article>
+          <article class="card">
+            <h2>Hours</h2>
+            <p>Monday–Friday: 8:00 AM – 5:30 PM</p>
+            <p>Saturday: Closed<br />Sunday: Closed</p>
+          </article>
+          <article class="card">
+            <h2>Map Placeholder</h2>
+            <div role="img" aria-label="Map placeholder" style="background:#dfe9f5; border-radius:8px; min-height:170px; display:grid; place-items:center; color:#36516e;">Embedded Map Area</div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer"><div class="container footer-grid"><div><h2>Neighborhood Auto Care</h2><p>123 Main Street, Your City, ST 00000<br /><a href="tel:+15555550199">(555) 555-0199</a></p></div><div><h3>Payment Options</h3><div class="payment-icons"><span class="pay-chip">Visa</span><span class="pay-chip">Mastercard</span><span class="pay-chip">AmEx</span><span class="pay-chip">Cash</span></div></div></div><div class="container copyright">© <span id="year"></span> Neighborhood Auto Care. All rights reserved.</div></footer>
+    <div class="mobile-callbar"><a href="tel:+15555550199">Tap to Call (555) 555-0199</a></div>
+    <script src="../assets/js/main.js"></script><script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  </body>
+</html>
