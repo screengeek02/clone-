@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CleanNow | On-Demand Cleaning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <nav class="nav container">
+        <div class="brand">🧼 CleanNow</div>
+        <div class="nav-links">
+          <a href="#services">Services</a>
+          <a href="#roles">App Roles</a>
+          <a href="#estimator">Estimator</a>
+          <a href="#rollout">Rollout</a>
+        </div>
+      </nav>
+
+      <section class="hero-content container">
+        <div class="hero-copy">
+          <p class="eyebrow">Uber-style On-Demand Cleaning Platform</p>
+          <h1>Book trusted cleaners in minutes.</h1>
+          <p>
+            CleanNow connects homeowners, Airbnb hosts, and property managers with
+            verified cleaning pros for instant or scheduled jobs.
+          </p>
+          <div class="hero-cta">
+            <a href="#estimator" class="btn btn-primary">Try Price Estimator</a>
+            <a href="#booking-flow" class="btn btn-secondary">See Booking Flow</a>
+          </div>
+          <ul class="hero-stats">
+            <li><strong>15–30%</strong><span>Platform commission range</span></li>
+            <li><strong>3 Apps</strong><span>Client, Cleaner, Admin</span></li>
+            <li><strong>Live</strong><span>Map tracking + in-app chat</span></li>
+          </ul>
+        </div>
+
+        <div class="booking-card" id="estimator">
+          <h2>Instant Price Estimator</h2>
+          <form id="estimate-form">
+            <label>
+              Service type
+              <select id="serviceType" required>
+                <option value="standard">Standard Cleaning</option>
+                <option value="deep">Deep Cleaning</option>
+                <option value="move">Move In / Move Out</option>
+                <option value="airbnb">Airbnb Turnover</option>
+                <option value="office">Office Cleaning</option>
+              </select>
+            </label>
+
+            <div class="grid-2">
+              <label>
+                Bedrooms
+                <input id="bedrooms" type="number" min="0" max="12" value="2" required />
+              </label>
+              <label>
+                Bathrooms
+                <input id="bathrooms" type="number" min="1" max="12" value="2" required />
+              </label>
+            </div>
+
+            <label>
+              Property size (sqft)
+              <input id="sqft" type="number" min="300" max="10000" value="1100" required />
+            </label>
+
+            <label class="checkbox">
+              <input id="urgent" type="checkbox" />
+              Urgent booking (+20%)
+            </label>
+
+            <button class="btn btn-primary" type="submit">Calculate</button>
+          </form>
+          <div class="estimate-result" id="estimateResult">Estimated total: <strong>$89</strong></div>
+        </div>
+      </section>
+    </header>
+
+    <main>
+      <section class="section container" id="services">
+        <h2>Service Categories</h2>
+        <div class="chips">
+          <span>Standard Cleaning</span><span>Deep Cleaning</span><span>Move-In / Move-Out</span>
+          <span>Airbnb Turnover</span><span>Post-Construction</span><span>Office Cleaning</span>
+          <span>Laundry</span><span>Fridge/Oven/Windows Add-ons</span>
+        </div>
+      </section>
+
+      <section class="section section-dark" id="roles">
+        <div class="container">
+          <h2>Three-App Platform</h2>
+          <div class="tabs" role="tablist">
+            <button class="tab active" data-role="client">👤 Client App</button>
+            <button class="tab" data-role="cleaner">🧹 Cleaner App</button>
+            <button class="tab" data-role="admin">🛠 Admin Dashboard</button>
+          </div>
+          <div class="role-panel" id="rolePanel"></div>
+        </div>
+      </section>
+
+      <section class="section container" id="booking-flow">
+        <h2>Booking Flow</h2>
+        <ol class="flow">
+          <li>User opens app and location is auto-detected.</li>
+          <li>Selects service, home details, and preferred time.</li>
+          <li>Instant price is calculated and nearby cleaners are notified.</li>
+          <li>First available cleaner accepts and navigates to the property.</li>
+          <li>Client tracks cleaner live; job starts and finishes in app.</li>
+          <li>Payment auto-charges and both sides leave ratings.</li>
+        </ol>
+      </section>
+
+      <section class="section section-accent" id="rollout">
+        <div class="container">
+          <h2>Rollout Strategy</h2>
+          <div class="rollout-grid">
+            <article>
+              <h3>Phase 1: Punta Cana</h3>
+              <p>High Airbnb density and villa demand. Perfect launch pad.</p>
+            </article>
+            <article>
+              <h3>Phase 2: Philadelphia</h3>
+              <p>Expand to a dense metro with strong rental turnover demand.</p>
+            </article>
+            <article>
+              <h3>Phase 3: Franchise Model</h3>
+              <p>Standardize ops, then scale city-by-city with local partners.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p><strong>CleanNow</strong> · Fast. Trusted. Frictionless cleaning.</p>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
