@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Appointment Request | Neighborhood Auto Care</title>
+    <meta name="description" content="Request your next vehicle service appointment online." />
+    <link rel="stylesheet" href="../assets/css/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <header class="site-header"><div class="container nav-wrap"><a class="brand" href="../index.html">Neighborhood Auto Care</a><button class="menu-toggle" data-menu-toggle aria-expanded="false">Menu</button><nav class="nav" data-main-nav><ul class="nav-list"><li><a class="nav-link" href="location.html">Our Shop</a></li><li><a class="nav-link" href="services.html">Auto Repair</a></li><li><a class="nav-link" href="../index.html#tips">Repair Tips</a></li><li><a class="nav-link" href="contact.html">Contact Us</a></li><li class="nav-cta"><a class="cta-btn" href="appointment-request.html">Appointment Request</a></li></ul></nav></div></header>
+    <main id="main-content">
+      <section class="page-hero"><div class="container"><h1>Appointment Request</h1><p>Complete the form below and we will confirm your preferred time.</p></div></section>
+      <section class="section">
+        <div class="container">
+          <article class="card">
+            <form class="form-wrap" data-validate-form novalidate>
+              <div class="form-grid">
+                <div><label for="full-name">Full Name *</label><input id="full-name" name="fullName" required /></div>
+                <div><label for="contact-phone">Phone *</label><input id="contact-phone" name="contactPhone" type="tel" required /></div>
+                <div><label for="contact-email">Email *</label><input id="contact-email" name="contactEmail" type="email" required /></div>
+                <div><label for="preferred-date">Preferred Date *</label><input id="preferred-date" name="preferredDate" type="date" required /></div>
+                <div><label for="preferred-time">Preferred Time *</label><input id="preferred-time" name="preferredTime" type="time" required /></div>
+                <div><label for="vehicle">Vehicle Info *</label><input id="vehicle" name="vehicle" placeholder="Year / Make / Model" required /></div>
+              </div>
+              <div><label for="service-needed">Requested Service</label><input id="service-needed" name="serviceNeeded" placeholder="e.g., Brake inspection" /></div>
+              <div><label for="notes">Additional Notes</label><textarea id="notes" name="notes" rows="4"></textarea></div>
+              <button class="cta-btn" type="submit">Submit Appointment Request</button>
+              <p class="form-status" aria-live="polite"></p>
+            </form>
+          </article>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer"><div class="container footer-grid"><div><h2>Neighborhood Auto Care</h2><p>123 Main Street, Your City, ST 00000<br /><a href="tel:+15555550199">(555) 555-0199</a></p></div><div><h3>Payment Options</h3><div class="payment-icons"><span class="pay-chip">Visa</span><span class="pay-chip">Mastercard</span><span class="pay-chip">AmEx</span><span class="pay-chip">Cash</span></div></div></div><div class="container copyright">© <span id="year"></span> Neighborhood Auto Care. All rights reserved.</div></footer>
+    <div class="mobile-callbar"><a href="tel:+15555550199">Tap to Call (555) 555-0199</a></div>
+    <script src="../assets/js/main.js"></script><script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  </body>
+</html>

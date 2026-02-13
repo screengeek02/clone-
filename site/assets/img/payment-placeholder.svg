@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="340" height="70" viewBox="0 0 340 70" role="img" aria-label="Payment icon placeholder">
+  <rect width="340" height="70" rx="10" fill="#eef3fa"/>
+  <g fill="#4b6078" font-family="Arial, sans-serif" font-size="16">
+    <text x="20" y="42">VISA</text>
+    <text x="95" y="42">MASTERCARD</text>
+    <text x="220" y="42">AMEX</text>
+    <text x="285" y="42">CASH</text>
+  </g>
+</svg>
