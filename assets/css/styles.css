@@ -19,7 +19,7 @@ body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background: url('/public/sample-2.svg') center/cover no-repeat;
+  background: url('/public/ocean-yacht-bg.svg') center/cover no-repeat;
   opacity: 0.12;
   z-index: -1;
   pointer-events: none;
