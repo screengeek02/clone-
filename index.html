@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CleanRide | Uber for Maids & Cleaners</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="logo">CleanRide</div>
+      <nav>
+        <a href="#services">Services</a>
+        <a href="#how">How it works</a>
+        <a href="#pros">For Cleaners</a>
+        <a href="#book" class="cta-link">Book now</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" id="book">
+        <div class="hero-content">
+          <p class="eyebrow">On-demand home cleaning</p>
+          <h1>Book trusted maids in minutes.</h1>
+          <p>
+            CleanRide brings Uber-style instant booking to home cleaning. Choose your service,
+            see upfront pricing, and track your cleaner in real-time.
+          </p>
+
+          <form class="booking-card" id="bookingForm">
+            <h2>Get your instant quote</h2>
+            <div class="grid">
+              <label>
+                Home size
+                <select id="size" required>
+                  <option value="">Select size</option>
+                  <option value="studio">Studio</option>
+                  <option value="1br">1 Bedroom</option>
+                  <option value="2br">2 Bedroom</option>
+                  <option value="3br">3+ Bedroom</option>
+                </select>
+              </label>
+              <label>
+                Service
+                <select id="service" required>
+                  <option value="">Select service</option>
+                  <option value="standard">Standard Clean</option>
+                  <option value="deep">Deep Clean</option>
+                  <option value="move">Move-In/Out</option>
+                  <option value="office">Office Cleaning</option>
+                </select>
+              </label>
+              <label>
+                Date
+                <input type="date" id="date" required />
+              </label>
+              <label>
+                Time
+                <input type="time" id="time" required />
+              </label>
+            </div>
+            <button type="submit">Check price & availability</button>
+            <p class="result" id="result"></p>
+          </form>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="phone">
+            <div class="status"></div>
+            <h3>Cleaner arriving</h3>
+            <p><strong>Maria G.</strong> · 4.9 ★</p>
+            <div class="map"></div>
+            <small>ETA: 8 minutes</small>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats">
+        <article><h3>10k+</h3><p>Homes cleaned</p></article>
+        <article><h3>20 min</h3><p>Average match time</p></article>
+        <article><h3>4.8/5</h3><p>Customer rating</p></article>
+      </section>
+
+      <section id="services" class="services">
+        <h2>Cleaning services on demand</h2>
+        <div class="cards">
+          <article>
+            <h3>Standard Cleaning</h3>
+            <p>Routine weekly or bi-weekly housekeeping with vetted professionals.</p>
+          </article>
+          <article>
+            <h3>Deep Cleaning</h3>
+            <p>Extra attention to kitchens, bathrooms, baseboards, and hard-to-reach spaces.</p>
+          </article>
+          <article>
+            <h3>Move-In/Out</h3>
+            <p>Perfect for tenants, landlords, and property managers who need spotless handoff.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="how" class="how">
+        <h2>How CleanRide works</h2>
+        <ol>
+          <li><strong>Book instantly:</strong> Choose service, time, and location in under a minute.</li>
+          <li><strong>Track in app:</strong> See your cleaner's live ETA and arrival updates.</li>
+          <li><strong>Pay seamlessly:</strong> Cashless checkout with secure in-app payment.</li>
+        </ol>
+      </section>
+
+      <section id="pros" class="pros">
+        <h2>Earn with CleanRide</h2>
+        <p>
+          Join as an independent cleaner, set your weekly availability, and get matched with
+          nearby clients. Keep flexible hours and grow your income.
+        </p>
+        <button>Apply as cleaner</button>
+      </section>
+    </main>
+
+    <footer>
+      <p>© <span id="year"></span> CleanRide. Inspired by premium home cleaning brands.</p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
