@@ -50,7 +50,12 @@ a { color: inherit; text-decoration: none; }
 .btn-secondary { background: rgba(255,255,255,.04); }
 .header { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--border); background: rgba(4,9,19,.75); backdrop-filter: blur(10px); }
 .header-inner { display:flex;justify-content:space-between;align-items:center;padding:14px 0; }
-.brand { font-weight: 800; letter-spacing: .3px; }
+.brand { display: inline-flex; align-items: center; font-weight: 800; letter-spacing: .3px; }
+.brand-logo {
+  display: block;
+  width: clamp(170px, 22vw, 250px);
+  height: auto;
+}
 .nav-desktop { display:flex; gap: 20px; }
 .nav-group { position: relative; padding-bottom: 14px; }
 .nav-group button { background: transparent; color: var(--text); border: 0; cursor: pointer; }

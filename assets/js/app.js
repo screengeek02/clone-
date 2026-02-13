@@ -14,7 +14,7 @@ function headerTemplate(){
   const mobileGroups = Object.entries(navGroups).map(([title, links]) => `
     <div><p class="small">${title}</p>${links.map(([n,h])=>`<a class="btn btn-secondary" style="display:block;margin:6px 0" href="${h}">${n}</a>`).join('')}</div>`).join('');
 
-  return `<header class="header"><div class="container header-inner"><a class="brand" href="/">VitalSpring</a><nav class="nav-desktop">${groups}</nav><button id="openMenu" class="menu-toggle">Menu</button></div></header>
+  return `<header class="header"><div class="container header-inner"><a class="brand" href="/" aria-label="Black Pearl Gift Shop Punta Cana home"><img class="brand-logo" src="/public/logo-black-pearl.svg" alt="Black Pearl Gift Shop Punta Cana" /></a><nav class="nav-desktop">${groups}</nav><button id="openMenu" class="menu-toggle">Menu</button></div></header>
   <div id="mobileMenu" class="mobile-menu panel" role="dialog" aria-modal="true" aria-label="Mobile navigation"><div style="display:flex;justify-content:space-between"><strong>Navigate</strong><button id="closeMenu" class="menu-toggle" style="display:block">Close</button></div><div style="margin-top:8px">${mobileGroups}</div></div>`;
 }
 
