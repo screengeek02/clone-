@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Valentine’s Letter — Envelope Animation</title>
+  <style>
+    :root{
+      --bgA:#1e1c2d;
+      --bgB:#241f3a;
+      --frame: rgba(255,255,255,.25);
+      --paper:#ffffff;
+      --ink: rgba(0,0,0,.60);
+      --shadowEnv: 0 26px 60px rgba(0,0,0,.45);
+      --ease: cubic-bezier(.2,.95,.2,1);
+      --dur: 900ms;
+      --envW: min(360px, 74vw);
+      --envH: calc(var(--envW) * .62);
+      --cardW: calc(var(--envW) * .74);
+      --cardH: calc(var(--envH) * 1.55);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      display:grid;
+      place-items:center;
+      background:
+        radial-gradient(900px 700px at 20% 10%, rgba(255,255,255,.06), transparent 60%),
+        radial-gradient(900px 700px at 80% 40%, rgba(255,255,255,.05), transparent 60%),
+        linear-gradient(180deg, var(--bgB), var(--bgA));
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      overflow:hidden;
+      color:#fff;
+    }
+
+    .stage{
+      width:min(820px, 92vw);
+      height:min(940px, 92vh);
+      border:2px solid var(--frame);
+      position:relative;
+      display:grid;
+      place-items:center;
+      padding: clamp(16px, 2vw, 26px);
+    }
+
+    .scene{
+      width:100%;
+      height:100%;
+      display:grid;
+      place-items:center;
+      transform: translateY(-6vh);
+      perspective: 1200px;
+      position:relative;
+    }
+
+    .tap{
+      all:unset;
+      cursor:pointer;
+      width:var(--envW);
+      height:calc(var(--envH) + 200px);
+      position:relative;
+      -webkit-tap-highlight-color: transparent;
+      display:block;
+    }
+    .tap:focus-visible{
+      outline:3px solid rgba(255,255,255,.55);
+      outline-offset:10px;
+      border-radius:16px;
+    }
+
+    .envelope{
+      width:var(--envW);
+      height:var(--envH);
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform: translate(-50%, -50%);
+      transform-style:preserve-3d;
+      filter: drop-shadow(0 18px 30px rgba(0,0,0,.35));
+    }
+
+    .env-base{
+      position:absolute;
+      inset:0;
+      background:var(--paper);
+      border-radius: 6px;
+      box-shadow: var(--shadowEnv);
+      overflow:hidden;
+      transform: translateZ(0);
+    }
+
+    .env-pocket{
+      position:absolute;
+      inset:0;
+      border-radius:6px;
+      transform: translateZ(6px);
+      pointer-events:none;
+    }
+    .env-pocket::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:var(--paper);
+    }
+    .env-pocket::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(135deg, transparent 49.4%, var(--ink) 49.8%, var(--ink) 50.2%, transparent 50.6%),
+        linear-gradient(225deg, transparent 49.4%, var(--ink) 49.8%, var(--ink) 50.2%, transparent 50.6%);
+      opacity:.38;
+      mix-blend-mode:multiply;
+    }
+
+    .env-flap{
+      position:absolute;
+      inset:0;
+      transform-origin: 50% 0%;
+      transform: rotateX(0deg) translateZ(12px);
+      transition: transform 650ms var(--ease), filter 650ms var(--ease);
+      pointer-events:none;
+    }
+    .env-flap::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: var(--paper);
+      clip-path: polygon(0 0, 100% 0, 50% 56%);
+      border-radius:6px;
+      box-shadow: 0 10px 22px rgba(0,0,0,.18);
+    }
+    .env-flap::after{
+      content:"";
+      position:absolute;
+      left:0; right:0;
+      top:0;
+      height:calc(var(--envH) * .56);
+      clip-path: polygon(0 0, 100% 0, 50% 56%);
+      background: linear-gradient(180deg, rgba(0,0,0,.08), transparent 45%);
+      opacity:.9;
+      pointer-events:none;
+    }
+
+    .env-floor-shadow{
+      position:absolute;
+      left:50%;
+      top:calc(50% + (var(--envH) * .44));
+      width:calc(var(--envW) * .82);
+      height:18px;
+      transform:translateX(-50%);
+      background: radial-gradient(closest-side, rgba(0,0,0,.35), transparent 70%);
+      filter: blur(3px);
+      opacity:.55;
+      pointer-events:none;
+    }
+
+    .card-wrap{
+      position:absolute;
+      left:50%;
+      top:50%;
+      width:var(--cardW);
+      height:var(--cardH);
+      transform: translate(-50%, -50%) translateY(120px) translateZ(2px);
+      transition: transform var(--dur) var(--ease);
+      transform-style:preserve-3d;
+      z-index:2;
+    }
+
+    .card{
+      position:absolute;
+      inset:0;
+      transform-style:preserve-3d;
+      filter: drop-shadow(0 14px 18px rgba(0,0,0,.25));
+      border-radius: 6px;
+    }
+
+    .panel{
+      position:absolute;
+      top:0; bottom:0;
+      background: var(--paper);
+      border: 1px solid rgba(0,0,0,.14);
+      border-radius: 6px;
+      backface-visibility:hidden;
+      overflow:hidden;
+    }
+
+    .panel.center{
+      left:0; right:0;
+      display:grid;
+      place-items:center;
+    }
+
+    .panel.left, .panel.right{
+      width:50%;
+      top:0; bottom:0;
+      transform-style:preserve-3d;
+      transition: transform var(--dur) var(--ease);
+    }
+    .panel.left{
+      left:0;
+      transform-origin: 0% 50%;
+      transform: rotateY(0deg) translateZ(1px);
+    }
+    .panel.right{
+      right:0;
+      transform-origin: 100% 50%;
+      transform: rotateY(0deg) translateZ(1px);
+    }
+
+    .cover{
+      position:absolute;
+      inset:0;
+      display:grid;
+      place-items:center;
+      text-align:center;
+      padding: 22px;
+      transform: translateZ(1px);
+      transition: opacity 200ms ease;
+    }
+    .cover .top,
+    .cover .bottom{
+      letter-spacing:4px;
+      font-weight:700;
+      opacity:.65;
+      font-size:12px;
+    }
+    .cover .top{ margin-bottom:8px; }
+    .cover .bottom{ margin-top:8px; }
+    .cover .script{
+      font-family: "Brush Script MT", "Segoe Script", "Apple Chancery", cursive;
+      font-size: clamp(28px, 5.4vw, 46px);
+      line-height:1;
+      margin:0;
+      color:#111;
+      font-weight:500;
+    }
+
+    .inside{
+      position:absolute;
+      inset:0;
+      padding: 22px 20px;
+      display:grid;
+      align-content:start;
+      gap:10px;
+      opacity:0;
+      transition: opacity 420ms ease;
+      pointer-events:none;
+    }
+    .inside p{
+      margin:0;
+      color:#1d1d1f;
+      font-size:13px;
+      line-height:1.35;
+    }
+    .inside .sig{ margin-top:6px; font-weight:700; }
+
+    .is-open .cover{ opacity:0; }
+
+    .is-flap-open .env-flap{
+      transform: rotateX(170deg) translateZ(12px);
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.15));
+    }
+    .is-card-out .card-wrap{
+      transform: translate(-50%, -50%) translateY(-92px) translateZ(18px);
+    }
+    .is-card-open .panel.left{ transform: rotateY(-165deg) translateZ(1px); }
+    .is-card-open .panel.right{ transform: rotateY(165deg) translateZ(1px); }
+    .is-card-open .inside{ opacity:1; transition-delay: 180ms; }
+    .is-card-open .panel.left,
+    .is-card-open .panel.right{ transition-delay: 120ms; }
+
+    @media (prefers-reduced-motion: reduce){
+      *{ transition:none !important; animation:none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="scene">
+      <button type="button" class="tap" id="toggle" aria-pressed="false" aria-label="Open Valentine card">
+        <div class="envelope" id="env">
+          <div class="env-floor-shadow"></div>
+          <div class="env-base"></div>
+          <div class="card-wrap">
+            <div class="card" aria-hidden="true">
+              <div class="panel center">
+                <div class="cover">
+                  <div>
+                    <div class="top">HAPPY</div>
+                    <h2 class="script">Valentine’s</h2>
+                    <div class="bottom">DAY</div>
+                  </div>
+                </div>
+                <div class="inside">
+                  <p><strong>To my love,</strong></p>
+                  <p>From the moment I first saw you, I knew I wanted to build a lifetime of love, laughter, and unforgettable memories with you.</p>
+                  <p>Thank you for being my favorite person — always.</p>
+                  <p class="sig"><strong>Happy Valentine’s Day!</strong></p>
+                </div>
+              </div>
+              <div class="panel left" aria-hidden="true"></div>
+              <div class="panel right" aria-hidden="true"></div>
+            </div>
+          </div>
+          <div class="env-pocket"></div>
+          <div class="env-flap"></div>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('toggle');
+    const env = document.getElementById('env');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let open = false;
+    let busy = false;
+
+    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, reduceMotion ? 0 : ms));
+
+    async function openSequence() {
+      if (busy) return;
+      busy = true;
+
+      env.classList.add('is-flap-open');
+      await wait(520);
+      env.classList.add('is-card-out');
+      await wait(520);
+      env.classList.add('is-card-open', 'is-open');
+
+      open = true;
+      btn.setAttribute('aria-pressed', 'true');
+      btn.setAttribute('aria-label', 'Close Valentine card');
+      busy = false;
+    }
+
+    async function closeSequence() {
+      if (busy) return;
+      busy = true;
+
+      env.classList.remove('is-card-open', 'is-open');
+      await wait(360);
+      env.classList.remove('is-card-out');
+      await wait(520);
+      env.classList.remove('is-flap-open');
+
+      open = false;
+      btn.setAttribute('aria-pressed', 'false');
+      btn.setAttribute('aria-label', 'Open Valentine card');
+      busy = false;
+    }
+
+    btn.addEventListener('click', () => {
+      if (open) closeSequence();
+      else openSequence();
+    });
+  </script>
+</body>
+</html>
