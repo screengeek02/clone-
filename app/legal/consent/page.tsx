@@ -1,1 +1,0 @@
-export default function ConsentPage() { return <div><h1 className="text-3xl font-bold">Informed Consent</h1><p className="mt-3 text-muted">Placeholder consent language for testing participation and educational insights.</p></div>; }

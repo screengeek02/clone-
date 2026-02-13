@@ -1,1 +1,0 @@
-export default function PrivacyPage() { return <div><h1 className="text-3xl font-bold">Privacy Policy</h1><p className="mt-3 text-muted">Placeholder privacy terms describing data collection, processing, retention, and rights.</p></div>; }
