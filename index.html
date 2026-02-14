@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Corporate Photo Booth Rentals in Philadelphia | Instant Quote</title>
+    <meta
+      name="description"
+      content="Philadelphia corporate photo booth rentals with branded experiences, instant sharing, and dedicated attendants. Get a fast quote for your next event."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Minimal PPC header: only logo + click-to-call -->
+    <header class="topbar" aria-label="Primary contact bar">
+      <div class="container row between center">
+        <a class="brand" href="#hero" aria-label="Go to top of page">PHL Booth Co.</a>
+        <a class="phone" href="tel:+12155551234" aria-label="Call now at 215-555-1234">
+          Call/Text (215) 555-1234
+        </a>
+      </div>
+    </header>
+
+    <main>
+      <!-- HERO SECTION -->
+      <section id="hero" class="hero section-lg" aria-labelledby="hero-title">
+        <div class="hero-overlay"></div>
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">Philadelphia Corporate Events</p>
+            <h1 id="hero-title">Corporate Photo Booth Rentals in Philadelphia</h1>
+            <p class="lead">
+              Branded, interactive photo booth experiences that increase event engagement,
+              amplify social reach, and deliver measurable ROI.
+            </p>
+            <ul class="check-list" aria-label="Key value points">
+              <li>Custom overlays & branded microsites</li>
+              <li>Instant text/email sharing for guests</li>
+              <li>On-site attendants and setup included</li>
+            </ul>
+            <div class="row wrap gap-sm">
+              <a class="btn btn-primary" href="#lead-form">Get Instant Quote</a>
+              <a class="btn btn-secondary" href="tel:+12155551234">Book by Phone</a>
+            </div>
+          </div>
+
+          <!-- PRIMARY LEAD FORM ABOVE THE FOLD -->
+          <aside class="card form-card" aria-labelledby="form-title">
+            <h2 id="form-title">Get Pricing & Availability</h2>
+            <p class="muted">Response typically within 15 minutes during business hours.</p>
+            <form id="lead-form" novalidate>
+              <div class="grid-2">
+                <label>
+                  Name
+                  <input name="name" type="text" required autocomplete="name" />
+                </label>
+                <label>
+                  Company
+                  <input name="company" type="text" required autocomplete="organization" />
+                </label>
+              </div>
+              <label>
+                Email
+                <input name="email" type="email" required autocomplete="email" />
+              </label>
+              <label>
+                Phone
+                <input name="phone" type="tel" required autocomplete="tel" />
+              </label>
+              <div class="grid-2">
+                <label>
+                  Event Date
+                  <input name="eventDate" type="date" required />
+                </label>
+                <label>
+                  Event Type
+                  <select name="eventType" required>
+                    <option value="">Select one</option>
+                    <option>Conference</option>
+                    <option>Trade Show</option>
+                    <option>Holiday Party</option>
+                    <option>Company Celebration</option>
+                    <option>Other</option>
+                  </select>
+                </label>
+              </div>
+              <label>
+                Estimated Guests
+                <input name="guests" type="number" min="10" step="1" required />
+              </label>
+              <button class="btn btn-primary btn-block" type="submit">Check Availability</button>
+              <p id="form-status" class="form-status" role="status" aria-live="polite"></p>
+            </form>
+          </aside>
+        </div>
+      </section>
+
+      <!-- TRUSTED BY / SOCIAL PROOF -->
+      <section class="section" aria-labelledby="trusted-title">
+        <div class="container">
+          <h2 id="trusted-title" class="section-title center">Trusted by Philadelphia Brands</h2>
+          <!-- Replace placeholder brand names/logos with real client assets -->
+          <div class="logo-grid" role="list" aria-label="Client logos">
+            <span role="listitem">COMCAST</span>
+            <span role="listitem">PENN</span>
+            <span role="listitem">LIVELY EVENTS</span>
+            <span role="listitem">URBAN RETAIL CO.</span>
+            <span role="listitem">CITY HEALTH GROUP</span>
+            <span role="listitem">WAWA</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- FEATURES / CAPABILITIES -->
+      <section class="section alt" aria-labelledby="features-title">
+        <div class="container">
+          <h2 id="features-title" class="section-title">Everything Needed for a High-Impact Activation</h2>
+          <div class="feature-grid">
+            <article class="feature-card"><h3>Custom Branding</h3><p>Overlays, start screens, and print templates aligned to your campaign.</p></article>
+            <article class="feature-card"><h3>Instant Sharing</h3><p>Text, email, and QR delivery to expand post-event reach in real time.</p></article>
+            <article class="feature-card"><h3>Live Analytics</h3><p>Track sessions, shares, impressions, and lead capture performance.</p></article>
+            <article class="feature-card"><h3>On-Site Attendants</h3><p>Professional staffing handles setup, guest flow, and troubleshooting.</p></article>
+            <article class="feature-card"><h3>Green Screen</h3><p>Transport guests anywhere with dynamic virtual backgrounds.</p></article>
+            <article class="feature-card"><h3>GIFs & Boomerangs</h3><p>Interactive formats that increase social engagement and dwell time.</p></article>
+            <article class="feature-card"><h3>Premium Prints</h3><p>Studio-quality prints with branded takeaways your guests keep.</p></article>
+          </div>
+        </div>
+      </section>
+
+      <!-- VISUAL PROOF GALLERY -->
+      <section class="section" aria-labelledby="gallery-title">
+        <div class="container">
+          <h2 id="gallery-title" class="section-title">Corporate Event Gallery</h2>
+          <div class="carousel" aria-label="Photo booth gallery carousel">
+            <button class="carousel-btn prev" aria-label="Previous slide">‹</button>
+            <div class="carousel-track" id="carousel-track">
+              <!-- Replace placeholder images with production gallery assets -->
+              <img src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80" alt="Corporate guests at a branded photo booth" />
+              <img src="https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=1200&q=80" alt="Conference attendees taking branded photos" />
+              <img src="https://images.unsplash.com/photo-1515169067868-5387ec356754?auto=format&fit=crop&w=1200&q=80" alt="Photo booth setup at an indoor business event" />
+              <img src="https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=1200&q=80" alt="Corporate holiday party guests sharing booth images" />
+            </div>
+            <button class="carousel-btn next" aria-label="Next slide">›</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- BENEFITS / MARKETING VALUE -->
+      <section class="section alt" aria-labelledby="benefits-title">
+        <div class="container narrow">
+          <h2 id="benefits-title" class="section-title">Why Corporate Teams Book Us</h2>
+          <p>
+            Our photo booth activations do more than entertain—they create branded touchpoints
+            that convert moments into measurable marketing value.
+          </p>
+          <ul class="benefit-list">
+            <li><strong>Increase Engagement:</strong> Keep attendees active and interacting at your booth.</li>
+            <li><strong>Boost Brand Exposure:</strong> Every shared photo extends your message to new audiences.</li>
+            <li><strong>Capture Qualified Leads:</strong> Optional data capture workflows support follow-up campaigns.</li>
+            <li><strong>Elevate Perceived Event Quality:</strong> Polished activations strengthen brand perception.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- TESTIMONIALS -->
+      <section class="section" aria-labelledby="testimonials-title">
+        <div class="container">
+          <h2 id="testimonials-title" class="section-title">What Event Planners Say</h2>
+          <div class="testimonial-grid">
+            <blockquote>
+              “The booth became the busiest station at our conference. Setup was flawless and the
+              branded content looked incredible.”
+              <cite>— Senior Event Manager, SaaS Brand</cite>
+            </blockquote>
+            <blockquote>
+              “Professional team, clean design, and instant sharing drove more booth traffic than
+              we expected.”
+              <cite>— Marketing Director, Healthcare Group</cite>
+            </blockquote>
+            <blockquote>
+              “From planning to execution, everything felt enterprise-ready. We’ll book them again.”
+              <cite>— Corporate Communications Lead, Finance Firm</cite>
+            </blockquote>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section class="section alt" aria-labelledby="faq-title">
+        <div class="container narrow">
+          <h2 id="faq-title" class="section-title">Frequently Asked Questions</h2>
+          <div class="faq" id="faq">
+            <article class="faq-item">
+              <button class="faq-q" aria-expanded="false">How much space is required?</button>
+              <div class="faq-a">Most setups need an 8x8 ft footprint and one nearby power outlet.</div>
+            </article>
+            <article class="faq-item">
+              <button class="faq-q" aria-expanded="false">Do you provide staff on-site?</button>
+              <div class="faq-a">Yes. Every package includes trained attendants for setup and guest support.</div>
+            </article>
+            <article class="faq-item">
+              <button class="faq-q" aria-expanded="false">Can you match our event branding?</button>
+              <div class="faq-a">Absolutely. We brand overlays, print layouts, screens, and sharing experiences.</div>
+            </article>
+            <article class="faq-item">
+              <button class="faq-q" aria-expanded="false">How is pricing determined?</button>
+              <div class="faq-a">Pricing depends on hours, booth type, add-ons, and location logistics.</div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- FINAL CTA -->
+      <section class="section cta-band" aria-labelledby="final-cta-title">
+        <div class="container narrow center">
+          <h2 id="final-cta-title">Ready to elevate your next corporate event?</h2>
+          <p>Get a custom quote tailored to your timeline, venue, and guest count.</p>
+          <a class="btn btn-primary" href="#lead-form">Get Instant Quote</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container row between center wrap gap-sm">
+        <p>© <span id="year"></span> PHL Booth Co. All rights reserved.</p>
+        <a href="tel:+12155551234">(215) 555-1234</a>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
