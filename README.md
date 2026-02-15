@@ -1,64 +1,40 @@
 # ConectaRD Web App (MVP)
 
-This repository now includes a **working web app first** (as requested), plus the original long-form product spec.
+This repo contains a runnable **web-first MVP** for ConectaRD.
 
-- Web app (Node.js + Express + static frontend): swipe discovery, match creation, and basic chat.
-- Bilingual UI toggle (English / Español).
-- City filter for local discovery simulation.
-- API endpoints for profiles, swipe actions, matches, and chats.
+- Backend: Node.js (built-in `http`, no external runtime dependency required)
+- Frontend: static HTML/CSS/JS in `public/`
+- Features: swipe cards, like/pass/super-like, match list, basic chat, EN/ES toggle, city filter
 
-> Original detailed PRD is preserved in: `docs/PRD.md`.
+> Full product spec is preserved in `docs/PRD.md`.
 
-## 1) Quick Start (Local)
+## 1) Quick start (local)
 
 ### Requirements
 - Node.js 18+
 - npm 9+
 
-### Install and run
+### Run
 ```bash
 npm install
 npm run dev
 ```
 
-Open: `http://localhost:3000`
+Open `http://localhost:3000`
 
 ### Health check
 ```bash
 curl http://localhost:3000/api/health
 ```
 
-Expected:
+Expected response:
 ```json
 {"ok":true,"app":"ConectaRD Web MVP"}
 ```
 
 ---
 
-## 2) What is implemented
-
-### Frontend
-- Swipe-style card UI
-- Actions: Pass / Like / Super Like
-- Match banner on mutual like
-- Matches list
-- Chat panel with simple message send
-- Language switch (EN/ES)
-- City filter input
-
-### Backend (in-memory for MVP demo)
-- `GET /api/health`
-- `GET /api/profiles?city=`
-- `POST /api/swipe`
-- `GET /api/matches`
-- `GET /api/chats/:matchId`
-- `POST /api/chats/:matchId`
-
-> Note: Data is currently in-memory and resets on restart. This is intentional for fast MVP validation.
-
----
-
-## 3) Project Structure
+## 2) Project structure
 
 ```txt
 .
@@ -75,72 +51,80 @@ Expected:
 
 ---
 
-## 4) Deploy to VPS with Plesk + GitHub Extension
+## 3) Plesk + GitHub deployment (step-by-step)
 
-This section is optimized for your plan to use the **Plesk GitHub extension**.
+### Important (based on your screenshot)
+If you are on **Extensions → Node.js Manager** and see versions like `25.x`, `24.x`, `22.x`, `20.x`, that page only confirms Node runtimes are installed globally.
 
-### A. Prepare your server
-1. In Plesk, install:
-   - **Git** extension
-   - **Node.js** support (if not preinstalled)
-2. Make sure your domain/subdomain is created (example: `app.yourdomain.com`).
-3. Enable SSL (Let's Encrypt) in Plesk before going live.
+You **cannot run your app from that page**.
 
-### B. Connect GitHub repository in Plesk
-1. Open your domain in Plesk.
-2. Go to **Git**.
-3. Click **Add Repository**.
-4. Use your GitHub repo URL.
-5. Set deployment path, e.g.:
-   - `/httpdocs/conectard` (or the default Plesk path for the domain)
-6. Enable **Automatic deployment on push**.
+To run `npm install`, go to your **domain-level Node.js page**:
 
-### C. Configure Node.js app in Plesk
-1. Go to **Node.js** for the same domain.
+`Websites & Domains → your-domain.com → Node.js`
+
+### A) Connect GitHub repository
+1. Go to `Websites & Domains → your-domain.com → Git`.
+2. Add your GitHub repository URL.
+3. Set deployment path (example): `httpdocs/conectard`.
+4. Enable auto-deploy on push (optional but recommended).
+
+### B) Configure Node.js for that domain
+1. Go to `Websites & Domains → your-domain.com → Node.js`.
 2. Set:
-   - **Document root**: `httpdocs/conectard/public`
+   - **Node.js version**: choose `20.x` or `22.x` (LTS preferred)
    - **Application root**: `httpdocs/conectard`
+   - **Document root**: `httpdocs/conectard/public`
    - **Application startup file**: `server.js`
    - **Application mode**: `production`
-3. Click **NPM Install** in Plesk Node.js panel.
-4. Add environment variable:
-   - `PORT=3000` (or let Plesk manage internal port)
-5. Click **Enable Node.js** and then **Restart App**.
+3. Click **Enable Node.js**.
 
-### D. Auto-deploy command (post-pull)
-In Plesk Git deployment settings, add this deploy action:
+### C) Run npm install in Plesk
+In that same Node.js page:
+1. Click **NPM Install**.
+2. Wait for completion.
+3. Click **Restart App**.
+
+That button is the Plesk equivalent of:
+```bash
+npm install
+```
+
+### D) Optional post-deploy command for Git pulls
+In Git deployment actions, add:
 ```bash
 npm install --production
 ```
-Then restart app from Node.js panel.
 
-### E. Verify deployment
-After deployment:
-- Visit: `https://app.yourdomain.com`
-- Test health endpoint:
-  - `https://app.yourdomain.com/api/health`
-
-If it fails:
-- Check Plesk logs (Node.js logs + domain logs)
-- Confirm startup file is `server.js`
-- Confirm app root/document root paths
+### E) Verify deployment
+- Open: `https://your-domain.com`
+- Check API: `https://your-domain.com/api/health`
 
 ---
 
-## 5) Production hardening next steps
+## 4) If `npm install` fails in Plesk
 
-For real production use, implement next:
-1. PostgreSQL for persistent users/matches/messages
-2. Auth with phone OTP (Twilio/MessageBird)
-3. Session/auth tokens (JWT + refresh)
-4. File storage for profile photos (S3 compatible)
-5. Redis for rate limits + queueing
-6. Abuse prevention + moderation queue
-7. Payment integration (Stripe + app-store billing for mobile)
+Check these in order:
+1. **Wrong app root** (must be folder containing `package.json`).
+2. **Wrong startup file** (must be `server.js`).
+3. **Node version mismatch** (use LTS 20/22).
+4. **Server outbound firewall/proxy blocks npm registry**.
+5. **File permissions** on deployment directory.
+
+### SSH fallback (server admin)
+If needed, install via SSH from app root:
+```bash
+cd /var/www/vhosts/<domain>/httpdocs/conectard
+npm install --production
+```
+
+If `npm` is not in PATH, use full Plesk path from your screenshot, e.g.:
+```bash
+/opt/plesk/node/20/bin/npm install --production
+```
 
 ---
 
-## 6) Scripts
+## 5) Scripts
 
 ```bash
 npm run dev      # start app
