@@ -2,9 +2,9 @@
 
 This repo contains a runnable **web-first MVP** for ConectaRD.
 
-- Backend: Node.js (built-in `http`, no external runtime dependency required)
+- Backend: Node.js (`http` module) with simple persistent JSON database
 - Frontend: static HTML/CSS/JS in `public/`
-- Features: swipe cards, like/pass/super-like, match list, basic chat, EN/ES toggle, city filter
+- Features: customer register/sign-in, swipe cards, like/pass/super-like, match list, basic chat, EN/ES toggle, city filter
 
 > Full product spec is preserved in `docs/PRD.md`.
 
@@ -34,10 +34,35 @@ Expected response:
 
 ---
 
-## 2) Project structure
+## 2) New: Customer sign-in + database
+
+This version adds a real customer auth flow and persistent storage:
+
+- Register with `name + email + password`
+- Sign in with `email + password`
+- Session token auth for protected actions
+- Persistent user database in `data/users.json`
+- Passwords are stored as `scrypt` hash + salt (no plain text)
+
+### Auth endpoints
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me` (requires `Authorization: Bearer <token>`)
+
+### Protected endpoints (require sign-in)
+- `POST /api/swipe`
+- `GET /api/matches`
+- `GET /api/chats/:matchId`
+- `POST /api/chats/:matchId`
+
+---
+
+## 3) Project structure
 
 ```txt
 .
+├── data/
+│   └── users.json
 ├── docs/
 │   └── PRD.md
 ├── public/
@@ -51,123 +76,51 @@ Expected response:
 
 ---
 
-## 3) Plesk + GitHub deployment (step-by-step)
+## 4) Plesk + GitHub deployment (step-by-step)
 
-### Important (based on your screenshot)
+### Important
 If you are on **Extensions → Node.js Manager** and see versions like `25.x`, `24.x`, `22.x`, `20.x`, that page only confirms Node runtimes are installed globally.
 
 You **cannot run your app from that page**.
 
-To run `npm install`, go to your **domain-level Node.js page**:
+Use your domain-level app page:
 
 `Websites & Domains → your-domain.com → Node.js`
 
-### If you do NOT see a Node.js icon in your domain dashboard (your latest screenshot)
-Do this first:
+### If you do NOT see a Node.js icon in your domain dashboard
 1. Go to **Tools & Settings → Updates and Upgrades → Add/Remove Components**.
-2. Install **Node.js support** (Plesk component) if it is missing.
+2. Install **Node.js support** if missing.
 3. Go to **Extensions** and install/update **Node.js Toolkit**.
-4. Open your subscription/service plan permissions and ensure Node.js management is allowed for that domain.
-5. Confirm the domain is using **Web Hosting** (not Forwarding only).
-6. Return to **Websites & Domains** and refresh. The **Node.js** card should appear under Dev Tools.
+4. Ensure your subscription/service plan allows Node.js management.
+5. Ensure the domain uses **Web Hosting** (not forwarding-only).
+6. Refresh `Websites & Domains`.
 
-If Node.js still does not appear, this is a server-level permission/license issue; ask your VPS admin/host to enable Node.js for the subscription.
-
-### A) Connect GitHub repository
-1. Go to `Websites & Domains → your-domain.com → Git`.
-2. Add your GitHub repository URL.
-3. Set deployment path (example): `httpdocs/conectard`.
-4. Enable auto-deploy on push (optional but recommended).
-
-### B) Configure Node.js for that domain
-1. Go to `Websites & Domains → your-domain.com → Node.js`.
-2. Set:
-   - **Node.js version**: choose `20.x` or `22.x` (LTS preferred)
-   - **Application root**: `httpdocs/conectard`
-   - **Document root**: `httpdocs/conectard/public`
-   - **Application startup file**: `server.js`
-   - **Application mode**: `production`
-3. Click **Enable Node.js**.
-
-### C) Run npm install in Plesk
-In that same Node.js page:
-1. Click **NPM Install**.
-2. Wait for completion.
-3. Click **Restart App**.
-
-That button is the Plesk equivalent of:
-```bash
-npm install
-```
-
-### C.1) Fix for "startup file /httpdocs/app.js is not found" (your screenshot)
-Your app uses **`server.js`**, not `app.js`.
-
-On the same Node.js page, click the value next to **Application Startup File** and change it to:
-```
-server.js
-```
-
-Use these exact values:
-- **Application Root**: `/httpdocs` (or your deploy folder if using Git to subfolder)
-- **Document Root**: `/httpdocs/public`
+### Configure Node.js for this app
+Set these values:
+- **Node.js version**: `20.x` or `22.x`
+- **Application Root**: `/httpdocs` (or `/httpdocs/conectard` if deployed in subfolder)
+- **Document Root**: `/httpdocs/public` (or `/httpdocs/conectard/public`)
 - **Application Startup File**: `server.js`
+- **Application mode**: `production`
 
-Then click, in order:
+Then click:
 1. **NPM Install**
 2. **Restart App**
 
-If you deployed the repo into a subfolder (example `/httpdocs/conectard`), then set:
-- Application Root: `/httpdocs/conectard`
-- Document Root: `/httpdocs/conectard/public`
-- Startup File: `server.js`
+### Fix for `startup file /httpdocs/app.js is not found`
+Change **Application Startup File** from `app.js` to:
+```txt
+server.js
+```
 
-### C.2) Fix for `EADDRINUSE` on port 3000 (your latest screenshot)
-That error means another process is already using port `3000`.
-
-In Plesk, this usually happens when **Custom environment variables** contains `PORT=3000` while another app is already on 3000.
-
-Fix:
-1. Open **Node.js** settings for this domain.
+### Fix for `EADDRINUSE` on port 3000
+If Plesk log shows `EADDRINUSE` on `3000`:
+1. Open Node.js settings for the domain.
 2. Open **Custom environment variables**.
-3. Remove `PORT=3000` (or change it to a free port).
-4. Click **Save**.
-5. Click **Restart App**.
+3. Remove `PORT=3000`.
+4. Save and restart app.
 
-Recommended for Plesk: do **not** hardcode port 3000 in the panel; let Plesk-provided port be used automatically when available.
-
-### D) Optional post-deploy command for Git pulls
-In Git deployment actions, add:
-```bash
-npm install --production
-```
-
-### E) Verify deployment
-- Open: `https://your-domain.com`
-- Check API: `https://your-domain.com/api/health`
-
----
-
-## 4) If `npm install` fails in Plesk
-
-Check these in order:
-1. **Wrong app root** (must be folder containing `package.json`).
-2. **Wrong startup file** (must be `server.js`).
-3. **Node version mismatch** (use LTS 20/22).
-4. **Server outbound firewall/proxy blocks npm registry**.
-5. **File permissions** on deployment directory.
-
-### SSH fallback (server admin)
-If needed, install via SSH from app root:
-```bash
-cd /var/www/vhosts/<domain>/httpdocs/conectard
-npm install --production
-```
-
-If `npm` is not in PATH, use full Plesk path from your screenshot, e.g.:
-```bash
-/opt/plesk/node/20/bin/npm install --production
-```
+Let Plesk provide/manage the app port when possible.
 
 ---
 

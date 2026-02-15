@@ -20,6 +20,20 @@
     </header>
 
     <main class="layout">
+      <section class="panel auth-panel">
+        <h2 id="authTitle">Customer Sign In</h2>
+        <p id="authHint" class="muted">Create an account or sign in to use swipes and chat.</p>
+        <input id="authName" placeholder="Full name (for register)" />
+        <input id="authEmail" placeholder="Email" />
+        <input id="authPassword" type="password" placeholder="Password" />
+        <div class="actions auth-actions">
+          <button id="registerBtn" class="super">Register</button>
+          <button id="loginBtn" class="like">Sign in</button>
+          <button id="logoutBtn" class="pass hidden">Sign out</button>
+        </div>
+        <p id="authStatus" class="muted"></p>
+      </section>
+
       <section class="panel swipe-panel">
         <h2 id="swipeTitle">Swipe Discovery</h2>
         <div id="card" class="card hidden">

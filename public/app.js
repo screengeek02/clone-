@@ -1,5 +1,7 @@
 const texts = {
   en: {
+    authTitle: 'Customer Sign In',
+    authHint: 'Create an account or sign in to use swipes and chat.',
     swipeTitle: 'Swipe Discovery',
     matchTitle: 'Matches',
     chatTitle: 'Chat',
@@ -10,9 +12,14 @@ const texts = {
     like: 'Like',
     superLike: 'Super Like',
     apply: 'Apply',
-    send: 'Send'
+    send: 'Send',
+    register: 'Register',
+    signIn: 'Sign in',
+    signOut: 'Sign out'
   },
   es: {
+    authTitle: 'Acceso de Cliente',
+    authHint: 'Crea una cuenta o inicia sesión para usar swipes y chat.',
     swipeTitle: 'Descubrimiento por Swipe',
     matchTitle: 'Matches',
     chatTitle: 'Chat',
@@ -23,7 +30,10 @@ const texts = {
     like: 'Me gusta',
     superLike: 'Súper Like',
     apply: 'Aplicar',
-    send: 'Enviar'
+    send: 'Enviar',
+    register: 'Registrar',
+    signIn: 'Entrar',
+    signOut: 'Salir'
   }
 };
 
@@ -31,6 +41,8 @@ let profiles = [];
 let index = 0;
 let currentMatchId = null;
 let lang = 'en';
+let authToken = localStorage.getItem('authToken') || '';
+let authUser = null;
 
 const langSelect = document.getElementById('langSelect');
 const cityFilter = document.getElementById('cityFilter');
@@ -51,21 +63,48 @@ const chatForm = document.getElementById('chatForm');
 const chatInput = document.getElementById('chatInput');
 const messages = document.getElementById('messages');
 
+const authName = document.getElementById('authName');
+const authEmail = document.getElementById('authEmail');
+const authPassword = document.getElementById('authPassword');
+const authStatus = document.getElementById('authStatus');
+const registerBtn = document.getElementById('registerBtn');
+const loginBtn = document.getElementById('loginBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+
 async function fetchJson(url, options = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (authToken) {
+    headers.Authorization = `Bearer ${authToken}`;
+  }
+
   const response = await fetch(url, {
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     ...options
   });
+
+  const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const payload = await response.json().catch(() => ({}));
     throw new Error(payload.error || 'Request failed');
   }
-  return response.json();
+
+  return payload;
+}
+
+function updateAuthUi() {
+  if (authUser) {
+    authStatus.textContent = `Signed in as ${authUser.name} (${authUser.email})`;
+    logoutBtn.classList.remove('hidden');
+  } else {
+    authStatus.textContent = 'Not signed in.';
+    logoutBtn.classList.add('hidden');
+  }
 }
 
 function setLanguage(nextLang) {
   lang = nextLang;
   const t = texts[lang];
+  document.getElementById('authTitle').textContent = t.authTitle;
+  document.getElementById('authHint').textContent = t.authHint;
   document.getElementById('swipeTitle').textContent = t.swipeTitle;
   document.getElementById('matchTitle').textContent = t.matchTitle;
   document.getElementById('chatTitle').textContent = t.chatTitle;
@@ -77,6 +116,9 @@ function setLanguage(nextLang) {
   superBtn.textContent = t.superLike;
   filterBtn.textContent = t.apply;
   chatForm.querySelector('button').textContent = t.send;
+  registerBtn.textContent = t.register;
+  loginBtn.textContent = t.signIn;
+  logoutBtn.textContent = t.signOut;
 }
 
 function renderCard() {
@@ -92,7 +134,7 @@ function renderCard() {
   cardPhoto.src = profile.photo;
   cardName.textContent = `${profile.name}, ${profile.age}`;
   cardBio.textContent = profile.bio;
-  cardMeta.textContent = `${profile.city} • ${profile.likedYou ? 'Liked you' : 'Discovering'} `;
+  cardMeta.textContent = `${profile.city} • ${profile.likedYou ? 'Liked you' : 'Discovering'}`;
 
   cardTags.innerHTML = '';
   profile.tags.forEach((tag) => {
@@ -114,6 +156,10 @@ async function loadProfiles() {
 async function handleSwipe(action) {
   const profile = profiles[index];
   if (!profile) return;
+  if (!authUser) {
+    authStatus.textContent = 'Please sign in first.';
+    return;
+  }
 
   const data = await fetchJson('/api/swipe', {
     method: 'POST',
@@ -132,6 +178,13 @@ async function handleSwipe(action) {
 }
 
 async function loadMatches() {
+  if (!authUser) {
+    matchesList.innerHTML = '';
+    messages.innerHTML = '';
+    chatForm.classList.add('hidden');
+    return;
+  }
+
   const data = await fetchJson('/api/matches');
   matchesList.innerHTML = '';
 
@@ -171,7 +224,7 @@ async function openChat(matchId, selectedLi) {
 chatForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const body = chatInput.value.trim();
-  if (!body || !currentMatchId) return;
+  if (!body || !currentMatchId || !authUser) return;
 
   await fetchJson(`/api/chats/${currentMatchId}`, {
     method: 'POST',
@@ -182,12 +235,82 @@ chatForm.addEventListener('submit', async (event) => {
   await openChat(currentMatchId);
 });
 
+registerBtn.addEventListener('click', async () => {
+  try {
+    const payload = {
+      name: authName.value.trim(),
+      email: authEmail.value.trim(),
+      password: authPassword.value
+    };
+    const data = await fetchJson('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+
+    authToken = data.token;
+    authUser = data.user;
+    localStorage.setItem('authToken', authToken);
+    updateAuthUi();
+    await loadMatches();
+  } catch (err) {
+    authStatus.textContent = err.message;
+  }
+});
+
+loginBtn.addEventListener('click', async () => {
+  try {
+    const payload = {
+      email: authEmail.value.trim(),
+      password: authPassword.value
+    };
+    const data = await fetchJson('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+
+    authToken = data.token;
+    authUser = data.user;
+    localStorage.setItem('authToken', authToken);
+    updateAuthUi();
+    await loadMatches();
+  } catch (err) {
+    authStatus.textContent = err.message;
+  }
+});
+
+logoutBtn.addEventListener('click', () => {
+  authToken = '';
+  authUser = null;
+  currentMatchId = null;
+  localStorage.removeItem('authToken');
+  updateAuthUi();
+  loadMatches();
+});
+
 langSelect.addEventListener('change', () => setLanguage(langSelect.value));
 filterBtn.addEventListener('click', loadProfiles);
 passBtn.addEventListener('click', () => handleSwipe('pass'));
 likeBtn.addEventListener('click', () => handleSwipe('like'));
 superBtn.addEventListener('click', () => handleSwipe('super_like'));
 
+async function bootstrapAuth() {
+  if (!authToken) {
+    updateAuthUi();
+    return;
+  }
+
+  try {
+    const data = await fetchJson('/api/auth/me');
+    authUser = data.user;
+  } catch (_err) {
+    authToken = '';
+    authUser = null;
+    localStorage.removeItem('authToken');
+  }
+
+  updateAuthUi();
+}
+
 setLanguage('en');
+bootstrapAuth().then(loadMatches);
 loadProfiles();
-loadMatches();
