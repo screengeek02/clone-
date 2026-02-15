@@ -62,6 +62,17 @@ To run `npm install`, go to your **domain-level Node.js page**:
 
 `Websites & Domains → your-domain.com → Node.js`
 
+### If you do NOT see a Node.js icon in your domain dashboard (your latest screenshot)
+Do this first:
+1. Go to **Tools & Settings → Updates and Upgrades → Add/Remove Components**.
+2. Install **Node.js support** (Plesk component) if it is missing.
+3. Go to **Extensions** and install/update **Node.js Toolkit**.
+4. Open your subscription/service plan permissions and ensure Node.js management is allowed for that domain.
+5. Confirm the domain is using **Web Hosting** (not Forwarding only).
+6. Return to **Websites & Domains** and refresh. The **Node.js** card should appear under Dev Tools.
+
+If Node.js still does not appear, this is a server-level permission/license issue; ask your VPS admin/host to enable Node.js for the subscription.
+
 ### A) Connect GitHub repository
 1. Go to `Websites & Domains → your-domain.com → Git`.
 2. Add your GitHub repository URL.
