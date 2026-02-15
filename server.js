@@ -3,7 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
 
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
 const users = [
@@ -169,7 +170,16 @@ const server = http.createServer(async (req, res) => {
   serveStatic(url.pathname, res);
 });
 
-server.listen(PORT, () => {
+server.on('error', (err) => {
+  if (err && err.code === 'EADDRINUSE') {
+    // eslint-disable-next-line no-console
+    console.error(`Port ${PORT} is already in use. In Plesk, remove custom PORT=3000 and let Plesk assign the port automatically.`);
+  }
+
+  throw err;
+});
+
+server.listen(PORT, HOST, () => {
   // eslint-disable-next-line no-console
-  console.log(`ConectaRD web app running on port ${PORT}`);
+  console.log(`ConectaRD web app running on ${HOST}:${PORT}`);
 });

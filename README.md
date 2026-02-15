@@ -122,6 +122,20 @@ If you deployed the repo into a subfolder (example `/httpdocs/conectard`), then 
 - Document Root: `/httpdocs/conectard/public`
 - Startup File: `server.js`
 
+### C.2) Fix for `EADDRINUSE` on port 3000 (your latest screenshot)
+That error means another process is already using port `3000`.
+
+In Plesk, this usually happens when **Custom environment variables** contains `PORT=3000` while another app is already on 3000.
+
+Fix:
+1. Open **Node.js** settings for this domain.
+2. Open **Custom environment variables**.
+3. Remove `PORT=3000` (or change it to a free port).
+4. Click **Save**.
+5. Click **Restart App**.
+
+Recommended for Plesk: do **not** hardcode port 3000 in the panel; let Plesk-provided port be used automatically when available.
+
 ### D) Optional post-deploy command for Git pulls
 In Git deployment actions, add:
 ```bash
