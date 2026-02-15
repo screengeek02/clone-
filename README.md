@@ -100,6 +100,28 @@ That button is the Plesk equivalent of:
 npm install
 ```
 
+### C.1) Fix for "startup file /httpdocs/app.js is not found" (your screenshot)
+Your app uses **`server.js`**, not `app.js`.
+
+On the same Node.js page, click the value next to **Application Startup File** and change it to:
+```
+server.js
+```
+
+Use these exact values:
+- **Application Root**: `/httpdocs` (or your deploy folder if using Git to subfolder)
+- **Document Root**: `/httpdocs/public`
+- **Application Startup File**: `server.js`
+
+Then click, in order:
+1. **NPM Install**
+2. **Restart App**
+
+If you deployed the repo into a subfolder (example `/httpdocs/conectard`), then set:
+- Application Root: `/httpdocs/conectard`
+- Document Root: `/httpdocs/conectard/public`
+- Startup File: `server.js`
+
 ### D) Optional post-deploy command for Git pulls
 In Git deployment actions, add:
 ```bash
