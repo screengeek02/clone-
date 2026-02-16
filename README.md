@@ -12,6 +12,7 @@ A production-ready starter project using **Next.js App Router**, **PostgreSQL + 
 - Tailwind CSS starter UI
 - ESLint + Prettier configuration
 - `.env.example` for local setup
+- `app.js` startup file for hosts that require an explicit Node entrypoint (for example Plesk)
 
 ## Project structure
 
@@ -34,6 +35,7 @@ lib/
   prisma.ts
 prisma/
   schema.prisma
+app.js
 middleware.ts
 ```
 
@@ -78,6 +80,24 @@ Open [http://localhost:3000](http://localhost:3000).
 npm run build
 npm run start
 ```
+
+`npm run start` runs `node app.js`, which starts Next.js using a standard Node startup file.
+
+## Deploying on hosts that require an application startup file (example: Plesk)
+
+If your control panel expects an entrypoint file like `app.js`:
+
+1. Set **Application Startup File** to `app.js`.
+2. Ensure `NODE_ENV=production` is set.
+3. Set `PORT` if your provider requires a specific port.
+4. Run install/build once:
+
+```bash
+npm install
+npm run build
+```
+
+5. Start or restart the Node.js app from the control panel.
 
 ## API endpoints
 
