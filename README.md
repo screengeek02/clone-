@@ -136,3 +136,8 @@ Request body:
 - JWT secret is loaded from environment variables
 - Dashboard route is protected by middleware + server-side token verification
 - Password minimum length is enforced on signup
+
+## Troubleshooting
+
+If you see an error like `Configuring Next.js via 'next.config.ts' is not supported`, ensure your project uses `next.config.js` or `next.config.mjs`. This starter already uses `next.config.js` for compatibility with control-panel and shared-host environments.
+
