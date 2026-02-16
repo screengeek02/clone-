@@ -2,6 +2,17 @@
 
 A production-ready starter project using **Next.js App Router**, **PostgreSQL + Prisma**, **JWT authentication**, and **Tailwind CSS**.
 
+## What is the application?
+
+This repository is a full Next.js web app starter. When it is running correctly, opening your domain should show the app home page titled **"Next.js Prisma Auth Starter"** with navigation links to:
+
+- Home (`/`)
+- Sign Up (`/register`)
+- Login (`/login`)
+- Dashboard (`/dashboard`)
+
+If you only see the default Plesk page, your Node app is not currently the page being served for the domain.
+
 ## Features
 
 - Next.js 14 App Router with TypeScript
@@ -99,6 +110,33 @@ npm run build
 
 5. Start or restart the Node.js app from the control panel.
 
+## Plesk: seeing only the default page? (important)
+
+If your browser shows the Plesk default page instead of this app, usually one of these is true:
+
+1. **A static default file is being served first** (for example `index.html` in `httpdocs`).
+2. **Node app is not actually running** (or crashed after start).
+3. **Domain hosting type is not set to Node.js app/proxy for this domain**.
+
+Use this checklist:
+
+1. In **File Manager**, remove or rename `httpdocs/index.html` (Plesk default page).
+2. Confirm **Application Root** points to the folder that contains this project (`package.json`, `app.js`, `app/`).
+3. Confirm **Application Startup File** is `app.js`.
+4. In **Run script** / terminal, run:
+
+```bash
+npm install
+npm run build
+npm run start
+```
+
+5. Click **Restart App** in Plesk.
+6. Check **Logs** for startup errors (missing env vars, DB connection errors, etc.).
+7. If needed, set **Document Root** to `httpdocs` and ensure there is no static index file shadowing the Node app.
+
+After this, the domain root should load the Next.js starter home page.
+
 ## API endpoints
 
 ### `POST /api/auth/signup`
@@ -140,4 +178,3 @@ Request body:
 ## Troubleshooting
 
 If you see an error like `Configuring Next.js via 'next.config.ts' is not supported`, ensure your project uses `next.config.js` or `next.config.mjs`. This starter already uses `next.config.js` for compatibility with control-panel and shared-host environments.
-
