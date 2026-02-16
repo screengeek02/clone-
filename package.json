@@ -1,0 +1,11 @@
+{
+  "name": "conectard-webapp",
+  "version": "1.0.0",
+  "description": "ConectaRD web MVP",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "check": "node --check server.js"
+  }
+}

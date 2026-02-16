@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ConectaRD Web MVP</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>ConectaRD</h1>
+      <div class="toolbar">
+        <select id="langSelect">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+        </select>
+        <input id="cityFilter" placeholder="City filter" />
+        <button id="filterBtn">Apply</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel auth-panel">
+        <h2 id="authTitle">Customer Sign In</h2>
+        <p id="authHint" class="muted">Create an account or sign in to use swipes and chat.</p>
+        <input id="authName" placeholder="Full name (for register)" />
+        <input id="authEmail" placeholder="Email" />
+        <input id="authPassword" type="password" placeholder="Password" />
+        <div class="actions auth-actions">
+          <button id="registerBtn" class="super">Register</button>
+          <button id="loginBtn" class="like">Sign in</button>
+          <button id="logoutBtn" class="pass hidden">Sign out</button>
+        </div>
+        <p id="authStatus" class="muted"></p>
+      </section>
+
+      <section class="panel swipe-panel">
+        <h2 id="swipeTitle">Swipe Discovery</h2>
+        <div id="card" class="card hidden">
+          <img id="cardPhoto" alt="profile" />
+          <div class="card-body">
+            <h3 id="cardName"></h3>
+            <p id="cardBio"></p>
+            <p id="cardMeta"></p>
+            <div id="cardTags" class="tags"></div>
+          </div>
+        </div>
+        <p id="emptyState" class="muted">No profiles available. Try another city.</p>
+        <div class="actions">
+          <button class="pass" id="passBtn">Pass</button>
+          <button class="like" id="likeBtn">Like</button>
+          <button class="super" id="superBtn">Super Like</button>
+        </div>
+        <div id="matchBanner" class="match-banner hidden"></div>
+      </section>
+
+      <section class="panel">
+        <h2 id="matchTitle">Matches</h2>
+        <ul id="matchesList" class="list"></ul>
+      </section>
+
+      <section class="panel chat-panel">
+        <h2 id="chatTitle">Chat</h2>
+        <p id="chatHint" class="muted">Select a match to open chat.</p>
+        <div id="messages" class="messages"></div>
+        <form id="chatForm" class="chat-form hidden">
+          <input id="chatInput" placeholder="Type a message..." />
+          <button type="submit">Send</button>
+        </form>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
