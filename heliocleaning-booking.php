@@ -193,3 +193,63 @@ function helio_cleaning_insert_booking( $data ) {
 
 	return (int) $wpdb->insert_id;
 }
+
+
+/**
+ * Register an admin menu page for viewing Helio bookings.
+ */
+function helio_cleaning_test_plugin_register_bookings_menu() {
+	add_menu_page(
+		esc_html__( 'Helio Bookings', 'helio-cleaning-test-plugin' ),
+		esc_html__( 'Helio Bookings', 'helio-cleaning-test-plugin' ),
+		'manage_options',
+		'helio-bookings',
+		'helio_cleaning_test_plugin_render_bookings_page',
+		'dashicons-list-view',
+		59
+	);
+}
+add_action( 'admin_menu', 'helio_cleaning_test_plugin_register_bookings_menu' );
+
+/**
+ * Render the Helio bookings admin page.
+ */
+function helio_cleaning_test_plugin_render_bookings_page() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	global $wpdb;
+
+	$table_name = 'hc_bookings';
+	$rows       = $wpdb->get_results( "SELECT * FROM `{$table_name}` ORDER BY created_at DESC", ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.NotPrepared
+	$columns    = ! empty( $rows ) ? array_keys( $rows[0] ) : array();
+	?>
+	<div class="wrap">
+		<h1><?php echo esc_html__( 'Helio Bookings', 'helio-cleaning-test-plugin' ); ?></h1>
+
+		<?php if ( empty( $rows ) ) : ?>
+			<p><?php echo esc_html__( 'No bookings found in hc_bookings.', 'helio-cleaning-test-plugin' ); ?></p>
+		<?php else : ?>
+			<table class="wp-list-table widefat fixed striped">
+				<thead>
+					<tr>
+						<?php foreach ( $columns as $column ) : ?>
+							<th scope="col"><?php echo esc_html( $column ); ?></th>
+						<?php endforeach; ?>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $rows as $row ) : ?>
+						<tr>
+							<?php foreach ( $columns as $column ) : ?>
+								<td><?php echo esc_html( (string) ( isset( $row[ $column ] ) ? $row[ $column ] : '' ) ); ?></td>
+							<?php endforeach; ?>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+		<?php endif; ?>
+	</div>
+	<?php
+}
