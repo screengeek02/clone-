@@ -54,12 +54,68 @@ register_activation_hook( __FILE__, 'helio_cleaning_test_plugin_activate' );
  * @return string
  */
 function helio_cleaning_test_plugin_shortcode() {
-	$current_time = current_time( 'mysql' );
+	global $wpdb;
 
-	return '<div class="helio-cleaning-test-shortcode" style="background:#16a34a;color:#ffffff;padding:40px;border-radius:12px;font-size:24px;font-weight:700;text-align:center;line-height:1.5;box-shadow:0 10px 25px rgba(0,0,0,0.2);border:3px solid #14532d;">'
-		. '<div style="font-size:30px;letter-spacing:1px;margin-bottom:12px;">' . esc_html__( 'HELIO PLUGIN LIVE', 'helio-cleaning-test-plugin' ) . '</div>'
-		. '<div style="font-size:18px;font-weight:600;">' . esc_html__( 'Current Server Time:', 'helio-cleaning-test-plugin' ) . ' ' . esc_html( $current_time ) . '</div>'
-		. '</div>';
+	$table_name = $wpdb->prefix . 'hc_bookings';
+	$message    = '';
+
+	if ( 'POST' === $_SERVER['REQUEST_METHOD'] && isset( $_POST['helio_booking_submit'] ) ) {
+		$client_name   = isset( $_POST['helio_client_name'] ) ? sanitize_text_field( wp_unslash( $_POST['helio_client_name'] ) ) : '';
+		$phone         = isset( $_POST['helio_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['helio_phone'] ) ) : '';
+		$service_type  = isset( $_POST['helio_service_type'] ) ? sanitize_text_field( wp_unslash( $_POST['helio_service_type'] ) ) : '';
+		$property_type = isset( $_POST['helio_property_type'] ) ? sanitize_text_field( wp_unslash( $_POST['helio_property_type'] ) ) : '';
+		$booking_date  = isset( $_POST['helio_booking_date'] ) ? sanitize_text_field( wp_unslash( $_POST['helio_booking_date'] ) ) : '';
+
+		$allowed_services  = array( 'Standard Cleaning', 'Deep Cleaning', 'Villa Cleaning' );
+		$allowed_properties = array( 'Apartment', 'Villa' );
+
+		if ( '' !== $client_name && '' !== $phone && in_array( $service_type, $allowed_services, true ) && in_array( $property_type, $allowed_properties, true ) ) {
+			$columns = $wpdb->get_col( "SHOW COLUMNS FROM `{$table_name}`" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.NotPrepared
+			$columns = is_array( $columns ) ? $columns : array();
+
+			$insert_data = array(
+				'name'        => $client_name,
+				'phone'       => $phone,
+				'service'     => $service_type,
+				'status'      => 'pending',
+				'created_at'  => current_time( 'mysql' ),
+			);
+
+			if ( '' !== $booking_date ) {
+				$insert_data['booking_date'] = $booking_date;
+			}
+
+			if ( in_array( 'property_type', $columns, true ) ) {
+				$insert_data['property_type'] = $property_type;
+			} elseif ( in_array( 'message', $columns, true ) ) {
+				$insert_data['message'] = 'Property Type: ' . $property_type;
+			}
+
+			if ( in_array( 'price', $columns, true ) ) {
+				$insert_data['price'] = '0.00';
+			}
+
+			$formats = array_fill( 0, count( $insert_data ), '%s' );
+			$inserted = $wpdb->insert( $table_name, $insert_data, $formats ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+
+			if ( false !== $inserted ) {
+				$message = '<div style="background:#dcfce7;border:1px solid #16a34a;color:#166534;padding:12px;border-radius:8px;margin-bottom:12px;font-weight:600;">' . esc_html__( 'Booking submitted successfully.', 'helio-cleaning-test-plugin' ) . '</div>';
+			}
+		}
+	}
+
+	$output  = '<div class="helio-cleaning-test-shortcode" style="max-width:520px;background:#f8fafc;border:1px solid #dbeafe;padding:20px;border-radius:10px;">';
+	$output .= $message;
+	$output .= '<form method="post" style="display:grid;gap:12px;">';
+	$output .= '<label style="font-weight:600;">' . esc_html__( 'Client Name', 'helio-cleaning-test-plugin' ) . ' <input type="text" name="helio_client_name" required style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;" /></label>';
+	$output .= '<label style="font-weight:600;">' . esc_html__( 'Phone', 'helio-cleaning-test-plugin' ) . ' <input type="text" name="helio_phone" required style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;" /></label>';
+	$output .= '<label style="font-weight:600;">' . esc_html__( 'Service Type', 'helio-cleaning-test-plugin' ) . ' <select name="helio_service_type" required style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;"><option value="Standard Cleaning">' . esc_html__( 'Standard Cleaning', 'helio-cleaning-test-plugin' ) . '</option><option value="Deep Cleaning">' . esc_html__( 'Deep Cleaning', 'helio-cleaning-test-plugin' ) . '</option><option value="Villa Cleaning">' . esc_html__( 'Villa Cleaning', 'helio-cleaning-test-plugin' ) . '</option></select></label>';
+	$output .= '<label style="font-weight:600;">' . esc_html__( 'Property Type', 'helio-cleaning-test-plugin' ) . ' <select name="helio_property_type" required style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;"><option value="Apartment">' . esc_html__( 'Apartment', 'helio-cleaning-test-plugin' ) . '</option><option value="Villa">' . esc_html__( 'Villa', 'helio-cleaning-test-plugin' ) . '</option></select></label>';
+	$output .= '<label style="font-weight:600;">' . esc_html__( 'Booking Date', 'helio-cleaning-test-plugin' ) . ' <input type="date" name="helio_booking_date" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;" /></label>';
+	$output .= '<button type="submit" name="helio_booking_submit" value="1" style="background:#2563eb;color:#fff;padding:10px 14px;border:0;border-radius:6px;font-weight:600;cursor:pointer;">' . esc_html__( 'Submit Booking', 'helio-cleaning-test-plugin' ) . '</button>';
+	$output .= '</form></div>';
+
+	return $output;
 }
 add_shortcode( 'heliotest', 'helio_cleaning_test_plugin_shortcode' );
 
