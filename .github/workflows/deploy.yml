@@ -19,6 +19,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Generate Prisma Client
+        run: npm run prisma:generate
+
       - name: Build application
         run: npm run build
 
@@ -34,6 +37,8 @@ jobs:
             cd /var/www/vhosts/your-domain/httpdocs
             git pull origin main
             npm install
+            npm run prisma:generate
+            npm run prisma:migrate:deploy
             npm run build
             # Plesk settings:
             # - Application Startup File: app.js

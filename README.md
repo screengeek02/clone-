@@ -70,15 +70,35 @@ Admin:
 - `GET /api/admin/bookings`
 - `GET /api/admin/listings`
 
-## Setup
+## Setup (Local Development)
 
 ```bash
 npm install
 cp .env.example .env
-npx prisma migrate dev --name init
+npm run prisma:generate
+npm run prisma:migrate:dev -- --name init
 npm run dev
 ```
 
+> `migrate dev` is for local development only.
+
+## Production / Plesk Prisma Commands (Important)
+
+Do **not** run `npx prisma migrate dev` in production.
+
+Use these commands on Plesk/VPS instead:
+
+```bash
+npm run prisma:generate
+npm run prisma:migrate:deploy
+```
+
+These map to:
+
+- `prisma generate`
+- `prisma migrate deploy`
+
+This avoids relying on `npx` and uses the correct production migration strategy.
 
 ## ESLint & Prettier
 
@@ -99,7 +119,11 @@ Prettier is included via `.prettierrc` for consistent formatting.
 
 1. Configure repo secrets: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `VPS_PORT`
 2. Push to `main` to trigger `.github/workflows/deploy.yml`
-3. On server use Node 20 and run production install/build
+3. Workflow/server deploy commands run:
+   - `npm install`
+   - `npm run prisma:generate`
+   - `npm run prisma:migrate:deploy`
+   - `npm run build`
 4. In Plesk set:
    - Application Root = project root
    - Application Startup File = `app.js`
@@ -110,6 +134,8 @@ Production run:
 
 ```bash
 npm install
+npm run prisma:generate
+npm run prisma:migrate:deploy
 npm run build
 node app.js
 ```
