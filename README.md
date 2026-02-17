@@ -137,6 +137,29 @@ npm run start
 
 After this, the domain root should load the Next.js starter home page.
 
+
+
+## Plesk/Passenger error page: "We're sorry, but something went wrong"
+
+That page means the Node app crashed before serving requests. In this starter, you should now get a plain-text startup error if boot fails, but you should still verify logs in Plesk.
+
+Quick fix sequence:
+
+```bash
+npm install
+npm run build
+npm run start
+```
+
+Then in Plesk:
+
+1. Confirm **Application Startup File** is `app.js`.
+2. Confirm **Application Root** is the folder with `package.json`.
+3. Confirm `.env` exists with `DATABASE_URL` and `JWT_SECRET`.
+4. Click **Restart App** and re-open the domain.
+
+If `npm run build` was skipped, `app.js` will temporarily boot in dev mode and log a warning; build is still required for stable production operation.
+
 ## API endpoints
 
 ### `POST /api/auth/signup`
