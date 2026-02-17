@@ -79,6 +79,22 @@ npx prisma migrate dev --name init
 npm run dev
 ```
 
+
+## ESLint & Prettier
+
+ESLint is configured with Next.js TypeScript rules and allows `any` where useful for fast iteration:
+
+```json
+{
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "off"
+  }
+}
+```
+
+Prettier is included via `.prettierrc` for consistent formatting.
+
 ## Deployment Setup (GitHub Actions + VPS Node 20 + Plesk)
 
 1. Configure repo secrets: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `VPS_PORT`
@@ -93,7 +109,7 @@ npm run dev
 Production run:
 
 ```bash
-npm ci --omit=dev
+npm install
 npm run build
 node app.js
 ```
