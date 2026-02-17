@@ -221,7 +221,7 @@ function helio_cleaning_test_plugin_register_bookings_menu() {
 add_action( 'admin_menu', 'helio_cleaning_test_plugin_register_bookings_menu' );
 
 /**
- * Render the Helio bookings admin page.
+ * Render the Helio bookings admin page using core admin table styling.
  */
 function helio_cleaning_test_plugin_render_bookings_page() {
 	if ( ! current_user_can( 'manage_options' ) ) {
