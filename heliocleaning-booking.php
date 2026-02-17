@@ -54,7 +54,12 @@ register_activation_hook( __FILE__, 'helio_cleaning_test_plugin_activate' );
  * @return string
  */
 function helio_cleaning_test_plugin_shortcode() {
-	return '<div class="helio-cleaning-test-shortcode">' . esc_html__( 'Helio Cleaning Test Plugin shortcode is working.', 'helio-cleaning-test-plugin' ) . '</div>';
+	$current_time = current_time( 'mysql' );
+
+	return '<div class="helio-cleaning-test-shortcode" style="background:#16a34a;color:#ffffff;padding:40px;border-radius:12px;font-size:24px;font-weight:700;text-align:center;line-height:1.5;box-shadow:0 10px 25px rgba(0,0,0,0.2);border:3px solid #14532d;">'
+		. '<div style="font-size:30px;letter-spacing:1px;margin-bottom:12px;">' . esc_html__( 'HELIO PLUGIN LIVE', 'helio-cleaning-test-plugin' ) . '</div>'
+		. '<div style="font-size:18px;font-weight:600;">' . esc_html__( 'Current Server Time:', 'helio-cleaning-test-plugin' ) . ' ' . esc_html( $current_time ) . '</div>'
+		. '</div>';
 }
 add_shortcode( 'heliotest', 'helio_cleaning_test_plugin_shortcode' );
 
