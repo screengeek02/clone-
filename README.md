@@ -203,3 +203,110 @@ Request body:
 ## Troubleshooting
 
 If you see an error like `Configuring Next.js via 'next.config.ts' is not supported`, ensure your project uses `next.config.js` or `next.config.mjs`. This starter already uses `next.config.js` for compatibility with control-panel and shared-host environments.
+
+## Custom folders in this starter
+
+- `app/`: App Router pages and API route handlers.
+- `components/`: Reusable UI building blocks (header/footer now, can grow later).
+- `lib/`: Shared server/client utilities (auth helpers, Prisma singleton).
+- `prisma/`: Database schema and Prisma artifacts.
+- `.github/workflows/`: CI/CD automation (build/deploy workflow).
+
+You can also add these optional folders as the project grows:
+
+- `emails/`: Transactional email templates.
+- `uploads/` or cloud adapter modules under `lib/storage/` for file handling.
+- `features/` for domain modules (billing, messaging, search) if you want feature-first organization.
+
+=============================
+9) Deployment Setup
+=============================
+
+This starter supports deployment with **GitHub Actions**, a **VPS with Node 20**, and a **Plesk server**.
+
+### GitHub Actions
+
+A workflow is included at:
+
+- `.github/workflows/deploy.yml`
+
+It does:
+
+1. Checkout code
+2. Use Node.js 20
+3. Install dependencies (`npm ci`)
+4. Build (`npm run build`)
+5. SSH deploy to your VPS/Plesk host
+
+Set repository secrets before enabling deployment:
+
+- `VPS_HOST`
+- `VPS_USER`
+- `VPS_SSH_KEY`
+- `VPS_PORT`
+
+### VPS (Node 20)
+
+On your server:
+
+```bash
+node -v   # should show v20.x
+npm -v
+npm ci
+npm run build
+npm run start
+```
+
+### Plesk Server
+
+In Node.js settings:
+
+- **Application Root**: folder with `package.json`
+- **Application Startup File**: `app.js`
+- **Application Mode**: `production`
+
+Then:
+
+```bash
+npm ci --omit=dev
+npm run build
+npm run start
+```
+
+### Environment variables (`.env`)
+
+Required:
+
+- `DATABASE_URL`
+- `JWT_SECRET`
+
+Optional useful vars for hosting:
+
+- `NODE_ENV=production`
+- `PORT` (if host requires custom port)
+- `HOST=0.0.0.0`
+
+### Tailwind CSS configuration
+
+Tailwind is configured through:
+
+- `tailwind.config.ts`
+- `postcss.config.js`
+- `app/globals.css`
+
+To avoid host issues, `tailwindcss`, `postcss`, and `autoprefixer` are in runtime `dependencies`.
+
+=============================
+10) Additional Features (Optional)
+=============================
+
+Possible upgrades you can add next:
+
+- **Email verification** (verify account after signup)
+- **Password reset** (token-based reset flow)
+- **Stripe subscriptions** (billing plans, webhook handling)
+- **Multi-role auth** (Admin / Provider / Customer)
+- **File uploads** (S3/Cloudinary + signed upload URLs)
+- **Messaging system** (inbox/chat with real-time updates)
+- **Search & filters** (full-text search + indexed filters)
+
