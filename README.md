@@ -137,6 +137,8 @@ npm run start
 
 After this, the domain root should load the Next.js starter home page.
 
+Note: Tailwind/PostCSS packages are kept in `dependencies` (not only `devDependencies`) to avoid missing-CSS-loader issues on hosts that install production packages only.
+
 
 
 ## Plesk/Passenger error page: "We're sorry, but something went wrong"
@@ -158,7 +160,7 @@ Then in Plesk:
 3. Confirm `.env` exists with `DATABASE_URL` and `JWT_SECRET`.
 4. Click **Restart App** and re-open the domain.
 
-If `npm run build` was skipped, `app.js` will temporarily boot in dev mode and log a warning; build is still required for stable production operation.
+If `npm run build` was skipped, `app.js` now returns a clear startup error page that tells you to build first (instead of attempting a broken fallback).
 
 ## API endpoints
 

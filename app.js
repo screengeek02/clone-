@@ -5,9 +5,9 @@ const next = require('next');
 
 const port = Number.parseInt(process.env.PORT || '3000', 10);
 const host = process.env.HOST || '0.0.0.0';
+const isProduction = process.env.NODE_ENV === 'production';
 
 const hasProductionBuild = fs.existsSync(path.join(process.cwd(), '.next', 'BUILD_ID'));
-const shouldUseDev = process.env.NODE_ENV !== 'production' || !hasProductionBuild;
 
 function startErrorServer(error) {
   const message = [
@@ -37,12 +37,13 @@ function startErrorServer(error) {
 
 async function start() {
   try {
-    if (process.env.NODE_ENV === 'production' && !hasProductionBuild) {
-      console.warn('No .next production build found; starting Next.js in development mode.');
-      console.warn('Run "npm run build" for proper production deployment.');
+    if (isProduction && !hasProductionBuild) {
+      throw new Error(
+        'No production build found (.next/BUILD_ID is missing). Run "npm run build" before starting in production.'
+      );
     }
 
-    const app = next({ dev: shouldUseDev, hostname: host, port });
+    const app = next({ dev: !isProduction, hostname: host, port });
     const handle = app.getRequestHandler();
 
     await app.prepare();
@@ -52,7 +53,7 @@ async function start() {
     });
 
     server.listen(port, host, () => {
-      console.log(`> Next.js server ready on http://${host}:${port} (dev=${shouldUseDev})`);
+      console.log(`> Next.js server ready on http://${host}:${port} (mode=${isProduction ? 'production' : 'development'})`);
     });
   } catch (error) {
     startErrorServer(error);
