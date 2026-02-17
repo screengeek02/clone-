@@ -15,6 +15,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+if ( ! defined( 'HELIO_CLEANING_TEST_PLUGIN_VERSION' ) ) {
+	define( 'HELIO_CLEANING_TEST_PLUGIN_VERSION', '1.0.0' );
+}
+
+if ( ! defined( 'HELIO_CLEANING_TEST_PLUGIN_DB_VERSION_OPTION' ) ) {
+	define( 'HELIO_CLEANING_TEST_PLUGIN_DB_VERSION_OPTION', 'helio_cleaning_test_plugin_db_version' );
+}
+
 /**
  * Display an admin notice when the plugin is activated.
  */
@@ -36,6 +44,7 @@ add_action( 'admin_notices', 'helio_cleaning_test_plugin_activation_notice' );
  */
 function helio_cleaning_test_plugin_activate() {
 	set_transient( 'helio_cleaning_test_plugin_activated', 1, 30 );
+	helio_cleaning_test_plugin_maybe_update_database();
 }
 register_activation_hook( __FILE__, 'helio_cleaning_test_plugin_activate' );
 
@@ -253,3 +262,54 @@ function helio_cleaning_test_plugin_render_bookings_page() {
 	</div>
 	<?php
 }
+
+
+/**
+ * Build the SQL statement for the hc_bookings table.
+ *
+ * @return string
+ */
+function helio_cleaning_test_plugin_get_bookings_table_schema() {
+	global $wpdb;
+
+	$table_name      = 'hc_bookings';
+	$charset_collate = $wpdb->get_charset_collate();
+
+	return "CREATE TABLE {$table_name} (
+		id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+		name varchar(255) DEFAULT '' NOT NULL,
+		first_name varchar(191) DEFAULT '' NOT NULL,
+		last_name varchar(191) DEFAULT '' NOT NULL,
+		email varchar(191) DEFAULT '' NOT NULL,
+		phone varchar(50) DEFAULT '' NOT NULL,
+		service varchar(191) DEFAULT '' NOT NULL,
+		booking_date date DEFAULT NULL,
+		booking_time time DEFAULT NULL,
+		address text DEFAULT NULL,
+		notes text DEFAULT NULL,
+		message text DEFAULT NULL,
+		status varchar(50) DEFAULT 'pending' NOT NULL,
+		created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+		PRIMARY KEY  (id),
+		KEY created_at (created_at)
+	) {$charset_collate};";
+}
+
+/**
+ * Run dbDelta when plugin DB version changes.
+ */
+function helio_cleaning_test_plugin_maybe_update_database() {
+	$current_version = get_option( HELIO_CLEANING_TEST_PLUGIN_DB_VERSION_OPTION, '' );
+
+	if ( HELIO_CLEANING_TEST_PLUGIN_VERSION === $current_version ) {
+		return;
+	}
+
+	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+
+	$schema = helio_cleaning_test_plugin_get_bookings_table_schema();
+	dbDelta( $schema );
+
+	update_option( HELIO_CLEANING_TEST_PLUGIN_DB_VERSION_OPTION, HELIO_CLEANING_TEST_PLUGIN_VERSION );
+}
+add_action( 'plugins_loaded', 'helio_cleaning_test_plugin_maybe_update_database' );
