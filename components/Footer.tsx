@@ -1,8 +1,8 @@
 export default function Footer() {
   return (
-    <footer className="border-t border-slate-200 bg-white">
-      <div className="mx-auto w-full max-w-5xl px-4 py-4 text-sm text-slate-500">
-        Built with Next.js, Prisma, PostgreSQL, Tailwind CSS, and JWT authentication.
+    <footer className="border-t bg-white">
+      <div className="mx-auto max-w-6xl p-4 text-sm text-slate-500">
+        © {new Date().getFullYear()} DR Services Marketplace
       </div>
     </footer>
   );

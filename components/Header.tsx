@@ -1,25 +1,29 @@
 import Link from 'next/link';
-
-const navItems = [
-  { href: '/', label: 'Home' },
-  { href: '/register', label: 'Sign Up' },
-  { href: '/login', label: 'Login' },
-  { href: '/dashboard', label: 'Dashboard' }
-];
+import { cookies } from 'next/headers';
+import { AUTH_COOKIE, verifyToken } from '@/lib/auth';
 
 export default function Header() {
+  const token = cookies().get(AUTH_COOKIE)?.value;
+  const payload = token ? verifyToken(token) : null;
+
   return (
-    <header className="border-b border-slate-200 bg-white">
-      <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-4">
-        <Link href="/" className="text-lg font-semibold text-slate-900">
-          Auth Starter
-        </Link>
-        <nav className="flex gap-4 text-sm text-slate-700">
-          {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className="hover:text-slate-900 hover:underline">
-              {item.label}
-            </Link>
-          ))}
+    <header className="border-b bg-white">
+      <div className="mx-auto flex max-w-6xl items-center justify-between p-4">
+        <Link href="/" className="font-semibold">DR Services Marketplace</Link>
+        <nav className="flex gap-4 text-sm">
+          <Link href="/about">About</Link>
+          <Link href="/contact">Contact</Link>
+          {payload ? (
+            <>
+              <Link href="/dashboard">Dashboard</Link>
+              {payload.role === 'ADMIN' ? <Link href="/admin">Admin</Link> : null}
+            </>
+          ) : (
+            <>
+              <Link href="/login">Login</Link>
+              <Link href="/register">Register</Link>
+            </>
+          )}
         </nav>
       </div>
     </header>

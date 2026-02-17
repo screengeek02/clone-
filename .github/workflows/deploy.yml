@@ -1,31 +1,22 @@
-name: Deploy to VPS/Plesk
+name: CI/CD Deploy to VPS (Plesk)
 
 on:
   push:
-    branches: ["main"]
+    branches: ['main']
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build Next.js app
-        run: npm run build
-
-      - name: Deploy over SSH
+      - run: npm ci
+      - run: npm run build
+      - name: Deploy with SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -38,8 +29,4 @@ jobs:
             git pull origin main
             npm ci --omit=dev
             npm run build
-
-            # For Plesk Node.js apps, app.js is the startup file.
-            # Restart app from Plesk panel, or run your process manager restart command.
-            # Example for Passenger-based apps:
-            # mkdir -p tmp && touch tmp/restart.txt
+            # In Plesk, set Application Startup File to app.js and restart app.

@@ -1,22 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth';
+import { AUTH_COOKIE } from '@/lib/auth';
+import { verifyEdgeToken } from '@/lib/auth-edge';
 
-export function middleware(request: NextRequest) {
-  if (!request.nextUrl.pathname.startsWith('/dashboard')) {
-    return NextResponse.next();
+const protectedPrefixes = ['/dashboard', '/profile', '/bookings', '/messages'];
+const adminPrefix = '/admin';
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const token = request.cookies.get(AUTH_COOKIE)?.value;
+
+  const needsAuth = protectedPrefixes.some((prefix) => pathname.startsWith(prefix));
+  const needsAdmin = pathname.startsWith(adminPrefix);
+
+  if (!needsAuth && !needsAdmin) return NextResponse.next();
+
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  const token = request.cookies.get('token')?.value;
+  const payload = await verifyEdgeToken(token);
+  if (!payload) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
 
-  if (!token || !verifyToken(token)) {
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
-    return NextResponse.redirect(loginUrl);
+  if (needsAdmin && payload.role !== 'ADMIN') {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*']
+  matcher: ['/dashboard/:path*', '/profile/:path*', '/bookings/:path*', '/messages/:path*', '/admin/:path*']
 };
