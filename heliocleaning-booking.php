@@ -121,3 +121,75 @@ function helio_cleaning_test_plugin_handle_insert_booking() {
 	exit;
 }
 add_action( 'admin_post_helio_test_insert_booking', 'helio_cleaning_test_plugin_handle_insert_booking' );
+
+
+/**
+ * Insert sanitized booking data into the hc_bookings table.
+ *
+ * @param array<string, mixed> $data Raw booking data.
+ * @return int|false Inserted row ID on success, otherwise false.
+ */
+function helio_cleaning_insert_booking( $data ) {
+	if ( ! is_array( $data ) || empty( $data ) ) {
+		return false;
+	}
+
+	global $wpdb;
+
+	$table_name   = 'hc_bookings';
+	$allowed_cols = array(
+		'name',
+		'first_name',
+		'last_name',
+		'email',
+		'phone',
+		'service',
+		'booking_date',
+		'booking_time',
+		'address',
+		'notes',
+		'message',
+		'status',
+		'created_at',
+	);
+
+	$insert_data = array();
+	$formats     = array();
+
+	foreach ( $data as $column => $value ) {
+		$column = sanitize_key( $column );
+
+		if ( ! in_array( $column, $allowed_cols, true ) || null === $value ) {
+			continue;
+		}
+
+		if ( is_email( (string) $value ) && 'email' === $column ) {
+			$insert_data[ $column ] = sanitize_email( (string) $value );
+			$formats[]              = '%s';
+		} elseif ( in_array( $column, array( 'booking_date', 'booking_time', 'created_at' ), true ) ) {
+			$insert_data[ $column ] = sanitize_text_field( (string) $value );
+			$formats[]              = '%s';
+		} elseif ( is_numeric( $value ) ) {
+			$insert_data[ $column ] = (string) $value;
+			$formats[]              = '%s';
+		} elseif ( in_array( $column, array( 'notes', 'message', 'address' ), true ) ) {
+			$insert_data[ $column ] = sanitize_textarea_field( (string) $value );
+			$formats[]              = '%s';
+		} else {
+			$insert_data[ $column ] = sanitize_text_field( (string) $value );
+			$formats[]              = '%s';
+		}
+	}
+
+	if ( empty( $insert_data ) ) {
+		return false;
+	}
+
+	$inserted = $wpdb->insert( $table_name, $insert_data, $formats ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+
+	if ( false === $inserted ) {
+		return false;
+	}
+
+	return (int) $wpdb->insert_id;
+}
