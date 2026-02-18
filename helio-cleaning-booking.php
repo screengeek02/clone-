@@ -150,14 +150,23 @@ function hc_booking_handle_frontend_submission() {
     if (!empty($email) && is_email($email)) {
         $customer_email_subject = 'Your Cleaning Booking Is Received – Helio Cleaning';
         $customer_email_headers = array('Content-Type: text/html; charset=UTF-8');
+        $whatsapp_message = rawurlencode(
+            'Hello Helio Cleaning, I would like to confirm my booking. ' .
+            'Client Name: ' . $name . '. ' .
+            'Service: ' . $service . '. ' .
+            'Booking Date: ' . (string) $booking_date
+        );
+        $whatsapp_url = 'https://wa.me/18098408313?text=' . $whatsapp_message;
         $customer_email_body =
             '<h2>Your Booking Has Been Received</h2>' .
             '<p>Hi ' . esc_html($name) . ',</p>' .
             '<p>Thank you for booking with Helio Cleaning. Here are your booking details:</p>' .
+            '<p><strong>Client Name:</strong> ' . esc_html($name) . '</p>' .
             '<p><strong>Service:</strong> ' . esc_html($service) . '</p>' .
             '<p><strong>Property Type:</strong> ' . esc_html($property_type) . '</p>' .
             '<p><strong>Booking Date:</strong> ' . esc_html((string) $booking_date) . '</p>' .
-            '<p>If you need any updates, contact us on WhatsApp: <strong>+1 809 840 8313</strong></p>';
+            '<p>WhatsApp: <strong>+1 809 840 8313</strong></p>' .
+            '<p><a href="' . esc_url($whatsapp_url) . '">Send us a WhatsApp message with your booking details</a></p>';
 
         wp_mail($email, $customer_email_subject, $customer_email_body, $customer_email_headers);
     }
