@@ -416,6 +416,10 @@ function helio_cleaning_test_plugin_render_cleaning_bookings_page() {
 	?>
 	<div class="wrap">
 		<h1><?php echo esc_html__( 'Bookings', 'helio-cleaning-test-plugin' ); ?></h1>
+
+		<?php if ( isset( $_GET['helio_status_updated'] ) && '1' === sanitize_key( wp_unslash( $_GET['helio_status_updated'] ) ) ) : ?>
+			<div class="notice notice-success is-dismissible"><p><?php echo esc_html__( 'Booking status updated.', 'helio-cleaning-test-plugin' ); ?></p></div>
+		<?php endif; ?>
 		<table class="widefat striped">
 			<thead>
 				<tr>
@@ -451,7 +455,22 @@ function helio_cleaning_test_plugin_render_cleaning_bookings_page() {
 							<td><?php echo esc_html( isset( $row['service'] ) ? (string) $row['service'] : '' ); ?></td>
 							<td><?php echo esc_html( $property_type ); ?></td>
 							<td><?php echo esc_html( isset( $row['booking_date'] ) ? (string) $row['booking_date'] : '' ); ?></td>
-							<td><?php echo esc_html( isset( $row['status'] ) ? (string) $row['status'] : '' ); ?></td>
+							<td>
+								<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:0;">
+									<input type="hidden" name="action" value="helio_update_booking_status" />
+									<input type="hidden" name="booking_id" value="<?php echo esc_attr( isset( $row['id'] ) ? (string) $row['id'] : '' ); ?>" />
+									<?php wp_nonce_field( 'helio_update_booking_status_action', 'helio_update_booking_status_nonce' ); ?>
+									<select name="booking_status" onchange="this.form.submit();" style="min-width:120px;">
+										<?php
+										$current_status = isset( $row['status'] ) ? (string) $row['status'] : 'pending';
+										$status_options = array( 'pending', 'confirmed', 'completed', 'cancelled' );
+										foreach ( $status_options as $status_option ) :
+										?>
+											<option value="<?php echo esc_attr( $status_option ); ?>" <?php selected( $current_status, $status_option ); ?>><?php echo esc_html( ucfirst( $status_option ) ); ?></option>
+										<?php endforeach; ?>
+									</select>
+								</form>
+							</td>
 							<td><?php echo esc_html( isset( $row['created_at'] ) ? (string) $row['created_at'] : '' ); ?></td>
 						</tr>
 					<?php endforeach; ?>
@@ -461,3 +480,42 @@ function helio_cleaning_test_plugin_render_cleaning_bookings_page() {
 	</div>
 	<?php
 }
+
+
+/**
+ * Update booking status from the admin bookings table.
+ */
+function helio_cleaning_test_plugin_handle_booking_status_update() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_die( esc_html__( 'You do not have permission to perform this action.', 'helio-cleaning-test-plugin' ) );
+	}
+
+	check_admin_referer( 'helio_update_booking_status_action', 'helio_update_booking_status_nonce' );
+
+	$booking_id     = isset( $_POST['booking_id'] ) ? absint( wp_unslash( $_POST['booking_id'] ) ) : 0;
+	$booking_status = isset( $_POST['booking_status'] ) ? sanitize_key( wp_unslash( $_POST['booking_status'] ) ) : '';
+	$allowed_status = array( 'pending', 'confirmed', 'completed', 'cancelled' );
+
+	if ( $booking_id > 0 && in_array( $booking_status, $allowed_status, true ) ) {
+		global $wpdb;
+
+		$table_name = $wpdb->prefix . 'hc_bookings';
+		$wpdb->update(
+			$table_name,
+			array( 'status' => $booking_status ),
+			array( 'id' => $booking_id ),
+			array( '%s' ),
+			array( '%d' )
+		);
+	}
+
+	wp_safe_redirect(
+		add_query_arg(
+			'helio_status_updated',
+			'1',
+			admin_url( 'admin.php?page=helio-cleaning-bookings' )
+		)
+	);
+	exit;
+}
+add_action( 'admin_post_helio_update_booking_status', 'helio_cleaning_test_plugin_handle_booking_status_update' );
