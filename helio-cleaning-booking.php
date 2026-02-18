@@ -31,9 +31,7 @@ function helio_cleaning_get_bookings_schema() {
         service VARCHAR(191) NOT NULL,
         property_type VARCHAR(191) NOT NULL,
         price DECIMAL(10,2) NOT NULL DEFAULT 0,
-        addons TEXT NULL,
         booking_date DATE NULL,
-        booking_time TIME NULL,
         status VARCHAR(50) NOT NULL DEFAULT 'pending',
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (id),
@@ -76,9 +74,7 @@ function hc_booking_handle_frontend_submission() {
     $phone = isset($_POST['hc_phone']) ? sanitize_text_field(wp_unslash($_POST['hc_phone'])) : '';
     $property_type = isset($_POST['hc_property_type']) ? sanitize_text_field(wp_unslash($_POST['hc_property_type'])) : '';
     $booking_date_raw = isset($_POST['hc_booking_date']) ? sanitize_text_field(wp_unslash($_POST['hc_booking_date'])) : '';
-
     $raw_service = isset($_POST['helio_service']) ? sanitize_text_field(wp_unslash($_POST['helio_service'])) : '';
-    $raw_addon = isset($_POST['helio_addon']) ? sanitize_text_field(wp_unslash($_POST['helio_addon'])) : '';
 
     if (empty($client_name) || empty($phone) || empty($raw_service) || empty($property_type)) {
         return array('handled' => true, 'message' => esc_html__('Please fill in all required fields.', 'helio-cleaning-booking'));
@@ -89,46 +85,25 @@ function hc_booking_handle_frontend_submission() {
     }
 
     $valid_services = array(
-        '3500|Basic Cleaning',
-        '4500|Standard Cleaning',
-        '6500|Premium / Deep Clean',
+        '6500|Villa & Home Cleaning',
+        '2500|Airbnb Turnover',
+        '0|Office Cleaning',
+        '2000|Window Cleaning',
+        '10000|Pool Cleaning',
+        '4000|Upholstery & Deep Cleaning',
     );
 
-    $valid_addons = array(
-        '',
-        '800|Inside Fridge Cleaning',
-        '1200|Interior Window Cleaning',
-        '600|Linen Change',
-        '1500|Express Same-Day Service',
-    );
-
-    if (!in_array($raw_service, $valid_services, true) || !in_array($raw_addon, $valid_addons, true)) {
-        return array('handled' => true, 'message' => esc_html__('Invalid booking option selected.', 'helio-cleaning-booking'));
+    if (!in_array($raw_service, $valid_services, true) || strpos($raw_service, '|') === false) {
+        return array('handled' => true, 'message' => esc_html__('Invalid service selected.', 'helio-cleaning-booking'));
     }
 
-    $service_price = 0;
-    $service_name = '';
-    $addon_price = 0;
-    $addon_name = '';
-
-    if (strpos($raw_service, '|') !== false) {
-        list($service_price, $service_name) = explode('|', $raw_service);
-    }
-
-    if (!empty($raw_addon) && strpos($raw_addon, '|') !== false) {
-        list($addon_price, $addon_name) = explode('|', $raw_addon);
-    }
-
-    $service_price = floatval($service_price);
+    list($service_price, $service_name) = explode('|', $raw_service, 2);
+    $service_price = floatval(sanitize_text_field($service_price));
     $service_name = sanitize_text_field($service_name);
-    $addon_price = floatval($addon_price);
-    $addon_name = sanitize_text_field($addon_name);
 
-    if (empty($service_name)) {
+    if ($service_name === '') {
         return array('handled' => true, 'message' => esc_html__('Service missing.', 'helio-cleaning-booking'));
     }
-
-    $total_price = floatval($service_price) + floatval($addon_price);
 
     $booking_date = null;
     if (!empty($booking_date_raw)) {
@@ -149,13 +124,12 @@ function hc_booking_handle_frontend_submission() {
             'phone' => $phone,
             'service' => $service_name,
             'property_type' => $property_type,
-            'price' => $total_price,
-            'addons' => $addon_name,
+            'price' => floatval($service_price),
             'booking_date' => $booking_date,
             'status' => 'pending',
             'created_at' => current_time('mysql'),
         ),
-        array('%s', '%s', '%s', '%s', '%f', '%s', '%s', '%s', '%s')
+        array('%s', '%s', '%s', '%s', '%f', '%s', '%s', '%s')
     );
 
     if ($inserted === false) {
@@ -164,7 +138,7 @@ function hc_booking_handle_frontend_submission() {
 
     do_action('helio_booking_created', $wpdb->insert_id);
 
-    wp_redirect(home_url('/thank-you/'));
+    wp_safe_redirect(home_url('/thank-you/'));
     exit;
 }
 
@@ -193,20 +167,13 @@ function hc_booking_shortcode() {
         <p>
             <label for="helio_service"><?php esc_html_e('Service', 'helio-cleaning-booking'); ?></label><br>
             <select name="helio_service" id="helio_service" required>
-                <option value="3500|Basic Cleaning"><?php esc_html_e('Basic Cleaning – RD$3,500', 'helio-cleaning-booking'); ?></option>
-                <option value="4500|Standard Cleaning"><?php esc_html_e('Standard Cleaning – RD$4,500', 'helio-cleaning-booking'); ?></option>
-                <option value="6500|Premium / Deep Clean"><?php esc_html_e('Premium / Deep Clean – RD$6,500', 'helio-cleaning-booking'); ?></option>
-            </select>
-        </p>
-
-        <p>
-            <label for="helio_addon"><?php esc_html_e('Add-on', 'helio-cleaning-booking'); ?></label><br>
-            <select name="helio_addon" id="helio_addon">
-                <option value=""><?php esc_html_e('No Add-ons', 'helio-cleaning-booking'); ?></option>
-                <option value="800|Inside Fridge Cleaning"><?php esc_html_e('Inside Fridge Cleaning (+800)', 'helio-cleaning-booking'); ?></option>
-                <option value="1200|Interior Window Cleaning"><?php esc_html_e('Interior Window Cleaning (+1200)', 'helio-cleaning-booking'); ?></option>
-                <option value="600|Linen Change"><?php esc_html_e('Linen Change (+600)', 'helio-cleaning-booking'); ?></option>
-                <option value="1500|Express Same-Day Service"><?php esc_html_e('Express Same-Day Service (+1500)', 'helio-cleaning-booking'); ?></option>
+                <option value=""><?php esc_html_e('Select Service', 'helio-cleaning-booking'); ?></option>
+                <option value="6500|Villa & Home Cleaning"><?php esc_html_e('Villa & Home Cleaning – From RD$6,500', 'helio-cleaning-booking'); ?></option>
+                <option value="2500|Airbnb Turnover"><?php esc_html_e('Airbnb Turnover – From RD$2,500', 'helio-cleaning-booking'); ?></option>
+                <option value="0|Office Cleaning"><?php esc_html_e('Office Cleaning – Custom Quote', 'helio-cleaning-booking'); ?></option>
+                <option value="2000|Window Cleaning"><?php esc_html_e('Window Cleaning – From RD$2,000', 'helio-cleaning-booking'); ?></option>
+                <option value="10000|Pool Cleaning"><?php esc_html_e('Pool Cleaning – From RD$10,000', 'helio-cleaning-booking'); ?></option>
+                <option value="4000|Upholstery & Deep Cleaning"><?php esc_html_e('Upholstery & Deep Cleaning – From RD$4,000', 'helio-cleaning-booking'); ?></option>
             </select>
         </p>
 
@@ -245,15 +212,6 @@ function hc_booking_register_admin_menu() {
         'dashicons-calendar-alt',
         26
     );
-
-    add_submenu_page(
-        'hc-bookings',
-        __('Bookings', 'helio-cleaning-booking'),
-        __('Bookings', 'helio-cleaning-booking'),
-        'manage_options',
-        'hc-bookings',
-        'hc_booking_render_bookings_page'
-    );
 }
 add_action('admin_menu', 'hc_booking_register_admin_menu');
 
@@ -278,7 +236,7 @@ function hc_booking_render_bookings_page() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'hc_bookings';
     $bookings = $wpdb->get_results(
-        "SELECT id, name, phone, service, property_type, booking_date, status, created_at
+        "SELECT id, name, phone, service, property_type, price, status, created_at
          FROM {$table_name}
          ORDER BY created_at DESC"
     );
@@ -291,11 +249,11 @@ function hc_booking_render_bookings_page() {
             <thead>
                 <tr>
                     <th><?php esc_html_e('ID', 'helio-cleaning-booking'); ?></th>
-                    <th><?php esc_html_e('Name', 'helio-cleaning-booking'); ?></th>
+                    <th><?php esc_html_e('Client Name', 'helio-cleaning-booking'); ?></th>
                     <th><?php esc_html_e('Phone', 'helio-cleaning-booking'); ?></th>
                     <th><?php esc_html_e('Service', 'helio-cleaning-booking'); ?></th>
                     <th><?php esc_html_e('Property Type', 'helio-cleaning-booking'); ?></th>
-                    <th><?php esc_html_e('Booking Date', 'helio-cleaning-booking'); ?></th>
+                    <th><?php esc_html_e('Price', 'helio-cleaning-booking'); ?></th>
                     <th><?php esc_html_e('Status', 'helio-cleaning-booking'); ?></th>
                     <th><?php esc_html_e('Created At', 'helio-cleaning-booking'); ?></th>
                 </tr>
@@ -313,7 +271,7 @@ function hc_booking_render_bookings_page() {
                             <td><?php echo esc_html($booking->phone); ?></td>
                             <td><?php echo esc_html($booking->service); ?></td>
                             <td><?php echo esc_html($booking->property_type); ?></td>
-                            <td><?php echo esc_html((string) $booking->booking_date); ?></td>
+                            <td><?php echo esc_html(number_format((float) $booking->price, 2)); ?></td>
                             <td>
                                 <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                                     <input type="hidden" name="action" value="hc_update_booking_status">
