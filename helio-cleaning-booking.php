@@ -44,9 +44,12 @@ register_activation_hook(__FILE__, 'hc_booking_activate');
 
 function hc_booking_get_services() {
     return array(
-        'Basic Cleaning',
-        'Standard Cleaning',
-        'Premium / Deep Clean',
+        '6500|Villa & Home Cleaning',
+        '2500|Airbnb Turnover',
+        '0|Office Cleaning',
+        '2000|Window Cleaning',
+        '10000|Pool Cleaning',
+        '4000|Upholstery & Deep Cleaning',
     );
 }
 
@@ -66,36 +69,19 @@ function hc_booking_get_statuses() {
     );
 }
 
-function hc_booking_get_base_prices() {
-    return array(
-        'Basic Cleaning' => 3500,
-        'Standard Cleaning' => 4500,
-        'Premium / Deep Clean' => 6500,
-    );
-}
-
-function hc_booking_get_addon_prices() {
-    return array(
-        'inside_fridge_cleaning' => 800,
-        'interior_window_cleaning' => 1200,
-        'linen_change' => 600,
-        'express_same_day_service' => 1500,
-    );
-}
-
-function hc_booking_calculate_total($service, $selected_addons) {
-    $base_prices = hc_booking_get_base_prices();
-    $addon_prices = hc_booking_get_addon_prices();
-
-    $total = isset($base_prices[$service]) ? (float) $base_prices[$service] : 0;
-
-    foreach ($selected_addons as $addon_key) {
-        if (isset($addon_prices[$addon_key])) {
-            $total += (float) $addon_prices[$addon_key];
-        }
+function hc_booking_parse_service_value($raw_service) {
+    $parts = explode('|', $raw_service, 2);
+    if (count($parts) !== 2) {
+        return array('price' => 0.0, 'service_name' => '');
     }
 
-    return $total;
+    $base_price = is_numeric($parts[0]) ? (float) $parts[0] : 0.0;
+    $service_name = sanitize_text_field($parts[1]);
+
+    return array(
+        'price' => $base_price,
+        'service_name' => $service_name,
+    );
 }
 
 function hc_booking_handle_frontend_submission() {
@@ -114,17 +100,14 @@ function hc_booking_handle_frontend_submission() {
     $name = isset($_POST['hc_name']) ? sanitize_text_field(wp_unslash($_POST['hc_name'])) : '';
     $phone = isset($_POST['hc_phone']) ? sanitize_text_field(wp_unslash($_POST['hc_phone'])) : '';
     $email = isset($_POST['hc_email']) ? sanitize_email(wp_unslash($_POST['hc_email'])) : '';
-    $service = isset($_POST['hc_service']) ? sanitize_text_field(wp_unslash($_POST['hc_service'])) : '';
+    $service_raw = isset($_POST['hc_service']) ? sanitize_text_field(wp_unslash($_POST['hc_service'])) : '';
     $property_type = isset($_POST['hc_property_type']) ? sanitize_text_field(wp_unslash($_POST['hc_property_type'])) : '';
     $booking_date_raw = isset($_POST['hc_booking_date']) ? sanitize_text_field(wp_unslash($_POST['hc_booking_date'])) : '';
-    $selected_addons_raw = isset($_POST['hc_addons']) && is_array($_POST['hc_addons']) ? wp_unslash($_POST['hc_addons']) : array();
-    $selected_addons = array_map('sanitize_text_field', $selected_addons_raw);
 
     $valid_services = hc_booking_get_services();
     $valid_property_types = hc_booking_get_property_types();
-    $valid_addons = array_keys(hc_booking_get_addon_prices());
 
-    if (empty($name) || empty($phone) || empty($service) || empty($property_type)) {
+    if (empty($name) || empty($phone) || empty($service_raw) || empty($property_type)) {
         return array('handled' => true, 'message' => esc_html__('Please fill in all required fields.', 'helio-cleaning-booking'));
     }
 
@@ -132,7 +115,7 @@ function hc_booking_handle_frontend_submission() {
         return array('handled' => true, 'message' => esc_html__('Please enter a valid email address.', 'helio-cleaning-booking'));
     }
 
-    if (!in_array($service, $valid_services, true)) {
+    if (!in_array($service_raw, $valid_services, true)) {
         return array('handled' => true, 'message' => esc_html__('Invalid service selected.', 'helio-cleaning-booking'));
     }
 
@@ -140,10 +123,12 @@ function hc_booking_handle_frontend_submission() {
         return array('handled' => true, 'message' => esc_html__('Invalid property type selected.', 'helio-cleaning-booking'));
     }
 
-    foreach ($selected_addons as $addon_key) {
-        if (!in_array($addon_key, $valid_addons, true)) {
-            return array('handled' => true, 'message' => esc_html__('Invalid add-on selected.', 'helio-cleaning-booking'));
-        }
+    $service_parts = hc_booking_parse_service_value($service_raw);
+    $service = $service_parts['service_name'];
+    $base_price = $service_parts['price'];
+
+    if ($service === '') {
+        return array('handled' => true, 'message' => esc_html__('Invalid service selected.', 'helio-cleaning-booking'));
     }
 
     $booking_date = null;
@@ -155,8 +140,6 @@ function hc_booking_handle_frontend_submission() {
         $booking_date = $booking_date_raw;
     }
 
-    $total_price = hc_booking_calculate_total($service, $selected_addons);
-
     global $wpdb;
     $inserted = $wpdb->insert(
         hc_booking_get_table_name(),
@@ -166,7 +149,7 @@ function hc_booking_handle_frontend_submission() {
             'service' => $service,
             'property_type' => $property_type,
             'booking_date' => $booking_date,
-            'price' => $total_price,
+            'price' => $base_price,
             'status' => 'pending',
         ),
         array('%s', '%s', '%s', '%s', '%s', '%f', '%s')
@@ -189,20 +172,32 @@ function hc_booking_handle_frontend_submission() {
         '<p><strong>Property Type:</strong> ' . esc_html($property_type) . '</p>' .
         '<p><strong>Booking Date:</strong> ' . esc_html((string) $booking_date) . '</p>' .
         '<p><strong>Status:</strong> ' . esc_html($status) . '</p>' .
-        '<p><strong>Total Price:</strong> RD$ ' . esc_html(number_format((float) $total_price, 2)) . '</p>';
+        '<p><strong>Total Price:</strong> ' . (($base_price > 0) ? 'RD$ ' . esc_html(number_format((float) $base_price, 2)) : 'Custom Quote Requested') . '</p>';
 
     wp_mail('info@heliocleaning.com', $admin_email_subject, $admin_email_body, $admin_email_headers);
 
     if (!empty($email) && is_email($email)) {
         $customer_email_subject = 'Your Cleaning Booking Is Received – Helio Cleaning';
         $customer_email_headers = array('Content-Type: text/html; charset=UTF-8');
+
+        if ($base_price > 0) {
+            $whatsapp_price_text = 'Base Price: RD$ ' . number_format((float) $base_price, 2);
+            $customer_price_html = '<p><strong>Base Price:</strong> RD$ ' . esc_html(number_format((float) $base_price, 2)) . '</p>';
+        } else {
+            $whatsapp_price_text = 'Office Cleaning – Custom Quote Requested';
+            $customer_price_html = '<p><strong>Base Price:</strong> Custom Quote Requested</p>';
+        }
+
         $whatsapp_message = rawurlencode(
             'Hello Helio Cleaning, I would like to confirm my booking. ' .
             'Client Name: ' . $name . '. ' .
-            'Service: ' . $service . '. ' .
+            'Service Selected: ' . $service . '. ' .
+            $whatsapp_price_text . '. ' .
             'Booking Date: ' . (string) $booking_date
         );
+
         $whatsapp_url = 'https://wa.me/18098408313?text=' . $whatsapp_message;
+
         $customer_email_body =
             '<h2>Your Booking Has Been Received</h2>' .
             '<p>Hi ' . esc_html($name) . ',</p>' .
@@ -211,7 +206,7 @@ function hc_booking_handle_frontend_submission() {
             '<p><strong>Service:</strong> ' . esc_html($service) . '</p>' .
             '<p><strong>Property Type:</strong> ' . esc_html($property_type) . '</p>' .
             '<p><strong>Booking Date:</strong> ' . esc_html((string) $booking_date) . '</p>' .
-            '<p><strong>Estimated Total:</strong> RD$ ' . esc_html(number_format((float) $total_price, 2)) . '</p>' .
+            $customer_price_html .
             '<p>WhatsApp: <strong>+1 809 840 8313</strong></p>' .
             '<p><a href="' . esc_url($whatsapp_url) . '">Send us a WhatsApp message with your booking details</a></p>';
 
@@ -224,8 +219,6 @@ function hc_booking_handle_frontend_submission() {
 
 function hc_booking_shortcode() {
     $result = hc_booking_handle_frontend_submission();
-    $base_prices = hc_booking_get_base_prices();
-    $addon_prices = hc_booking_get_addon_prices();
 
     ob_start();
 
@@ -255,39 +248,19 @@ function hc_booking_shortcode() {
             <label for="hc_service"><?php esc_html_e('Service', 'helio-cleaning-booking'); ?></label><br>
             <select id="hc_service" name="hc_service" required>
                 <option value=""><?php esc_html_e('Select Service', 'helio-cleaning-booking'); ?></option>
-                <?php foreach (hc_booking_get_services() as $service) : ?>
-                    <option value="<?php echo esc_attr($service); ?>"><?php echo esc_html($service); ?></option>
+                <?php foreach (hc_booking_get_services() as $service_option) : ?>
+                    <?php
+                    $service_parts = hc_booking_parse_service_value($service_option);
+                    $service_label = $service_parts['service_name'] . ' – ' . (($service_parts['price'] > 0) ? 'RD$ ' . number_format((float) $service_parts['price'], 0) : 'Custom Quote');
+                    ?>
+                    <option value="<?php echo esc_attr($service_option); ?>"><?php echo esc_html($service_label); ?></option>
                 <?php endforeach; ?>
             </select>
         </p>
 
-        <fieldset>
-            <legend><?php esc_html_e('Add-ons', 'helio-cleaning-booking'); ?></legend>
-            <p>
-                <label>
-                    <input type="checkbox" name="hc_addons[]" value="inside_fridge_cleaning" class="hc-addon-checkbox">
-                    <?php esc_html_e('Inside Fridge Cleaning (+800)', 'helio-cleaning-booking'); ?>
-                </label>
-            </p>
-            <p>
-                <label>
-                    <input type="checkbox" name="hc_addons[]" value="interior_window_cleaning" class="hc-addon-checkbox">
-                    <?php esc_html_e('Interior Window Cleaning (+1200)', 'helio-cleaning-booking'); ?>
-                </label>
-            </p>
-            <p>
-                <label>
-                    <input type="checkbox" name="hc_addons[]" value="linen_change" class="hc-addon-checkbox">
-                    <?php esc_html_e('Linen Change (+600)', 'helio-cleaning-booking'); ?>
-                </label>
-            </p>
-            <p>
-                <label>
-                    <input type="checkbox" name="hc_addons[]" value="express_same_day_service" class="hc-addon-checkbox">
-                    <?php esc_html_e('Express Same-Day Service (+1500)', 'helio-cleaning-booking'); ?>
-                </label>
-            </p>
-        </fieldset>
+        <input type="hidden" name="helio_base_price" id="helio_base_price" value="0">
+
+        <div id="helio_live_total" style="font-weight:800;font-size:20px;margin-top:10px;"> Total: RD$0 </div>
 
         <p>
             <label for="hc_property_type"><?php esc_html_e('Property Type', 'helio-cleaning-booking'); ?></label><br>
@@ -304,11 +277,6 @@ function hc_booking_shortcode() {
             <input type="date" id="hc_booking_date" name="hc_booking_date">
         </p>
 
-        <p id="hc-estimated-total" style="font-weight:bold;">
-            <?php esc_html_e('Estimated Total: RD$ 0', 'helio-cleaning-booking'); ?>
-        </p>
-        <input type="hidden" id="hc_total_price" name="hc_total_price" value="0">
-
         <p>
             <button type="submit" name="hc_booking_submit" value="1"><?php esc_html_e('Submit Booking', 'helio-cleaning-booking'); ?></button>
         </p>
@@ -316,48 +284,41 @@ function hc_booking_shortcode() {
 
     <script>
         (function () {
-            const basePrices = <?php echo wp_json_encode($base_prices); ?>;
-            const addonPrices = <?php echo wp_json_encode($addon_prices); ?>;
             const serviceSelect = document.getElementById('hc_service');
-            const addonCheckboxes = document.querySelectorAll('.hc-addon-checkbox');
-            const totalDisplay = document.getElementById('hc-estimated-total');
-            const totalInput = document.getElementById('hc_total_price');
+            const basePriceInput = document.getElementById('helio_base_price');
+            const liveTotal = document.getElementById('helio_live_total');
 
-            function formatRDPrice(value) {
-                return new Intl.NumberFormat('en-US', {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0
-                }).format(value);
+            function formatWithCommas(value) {
+                return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             }
 
-            function calculateTotal() {
-                const selectedService = serviceSelect ? serviceSelect.value : '';
-                let total = basePrices[selectedService] ? parseFloat(basePrices[selectedService]) : 0;
-
-                addonCheckboxes.forEach(function (checkbox) {
-                    if (checkbox.checked && addonPrices[checkbox.value]) {
-                        total += parseFloat(addonPrices[checkbox.value]);
-                    }
-                });
-
-                if (totalDisplay) {
-                    totalDisplay.textContent = 'Estimated Total: RD$ ' + formatRDPrice(total);
+            function updateLivePrice() {
+                if (!serviceSelect || !basePriceInput || !liveTotal) {
+                    return;
                 }
 
-                if (totalInput) {
-                    totalInput.value = total.toFixed(2);
+                const selectedValue = serviceSelect.value || '';
+                const parts = selectedValue.split('|');
+                const parsedPrice = parts.length > 1 ? parseFloat(parts[0]) : 0;
+                const price = Number.isFinite(parsedPrice) ? parsedPrice : 0;
+
+                basePriceInput.value = price.toFixed(2);
+
+                if (price === 0) {
+                    liveTotal.style.display = 'block';
+                    liveTotal.textContent = 'Custom quote — we will contact you.';
+                    return;
                 }
+
+                liveTotal.style.display = 'block';
+                liveTotal.textContent = 'Total: RD$' + formatWithCommas(Math.round(price));
             }
 
             if (serviceSelect) {
-                serviceSelect.addEventListener('change', calculateTotal);
+                serviceSelect.addEventListener('change', updateLivePrice);
             }
 
-            addonCheckboxes.forEach(function (checkbox) {
-                checkbox.addEventListener('change', calculateTotal);
-            });
-
-            calculateTotal();
+            updateLivePrice();
         })();
     </script>
     <?php
