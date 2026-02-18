@@ -374,3 +374,90 @@ function helio_cleaning_test_plugin_maybe_update_database() {
 	update_option( HELIO_CLEANING_TEST_PLUGIN_DB_VERSION_OPTION, HELIO_CLEANING_TEST_PLUGIN_VERSION );
 }
 add_action( 'plugins_loaded', 'helio_cleaning_test_plugin_maybe_update_database' );
+
+
+/**
+ * Register Helio Cleaning top-level admin menu and Bookings submenu.
+ */
+function helio_cleaning_test_plugin_register_helio_cleaning_menu() {
+	add_menu_page(
+		esc_html__( 'Helio Cleaning', 'helio-cleaning-test-plugin' ),
+		esc_html__( 'Helio Cleaning', 'helio-cleaning-test-plugin' ),
+		'manage_options',
+		'helio-cleaning',
+		'helio_cleaning_test_plugin_render_cleaning_bookings_page',
+		'dashicons-admin-home',
+		57
+	);
+
+	add_submenu_page(
+		'helio-cleaning',
+		esc_html__( 'Bookings', 'helio-cleaning-test-plugin' ),
+		esc_html__( 'Bookings', 'helio-cleaning-test-plugin' ),
+		'manage_options',
+		'helio-cleaning-bookings',
+		'helio_cleaning_test_plugin_render_cleaning_bookings_page'
+	);
+}
+add_action( 'admin_menu', 'helio_cleaning_test_plugin_register_helio_cleaning_menu' );
+
+/**
+ * Render Helio Cleaning > Bookings view-only table.
+ */
+function helio_cleaning_test_plugin_render_cleaning_bookings_page() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	global $wpdb;
+
+	$table_name = $wpdb->prefix . 'hc_bookings';
+	$rows       = $wpdb->get_results( "SELECT * FROM `{$table_name}` ORDER BY created_at DESC", ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.NotPrepared
+	?>
+	<div class="wrap">
+		<h1><?php echo esc_html__( 'Bookings', 'helio-cleaning-test-plugin' ); ?></h1>
+		<table class="widefat striped">
+			<thead>
+				<tr>
+					<th><?php echo esc_html__( 'ID', 'helio-cleaning-test-plugin' ); ?></th>
+					<th><?php echo esc_html__( 'Client Name', 'helio-cleaning-test-plugin' ); ?></th>
+					<th><?php echo esc_html__( 'Phone', 'helio-cleaning-test-plugin' ); ?></th>
+					<th><?php echo esc_html__( 'Service Type', 'helio-cleaning-test-plugin' ); ?></th>
+					<th><?php echo esc_html__( 'Property Type', 'helio-cleaning-test-plugin' ); ?></th>
+					<th><?php echo esc_html__( 'Booking Date', 'helio-cleaning-test-plugin' ); ?></th>
+					<th><?php echo esc_html__( 'Status', 'helio-cleaning-test-plugin' ); ?></th>
+					<th><?php echo esc_html__( 'Created At', 'helio-cleaning-test-plugin' ); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php if ( empty( $rows ) ) : ?>
+					<tr>
+						<td colspan="8"><?php echo esc_html__( 'No bookings found.', 'helio-cleaning-test-plugin' ); ?></td>
+					</tr>
+				<?php else : ?>
+					<?php foreach ( $rows as $row ) : ?>
+						<?php
+						$property_type = '';
+						if ( isset( $row['property_type'] ) ) {
+							$property_type = (string) $row['property_type'];
+						} elseif ( isset( $row['message'] ) && 0 === strpos( (string) $row['message'], 'Property Type: ' ) ) {
+							$property_type = str_replace( 'Property Type: ', '', (string) $row['message'] );
+						}
+						?>
+						<tr>
+							<td><?php echo esc_html( isset( $row['id'] ) ? (string) $row['id'] : '' ); ?></td>
+							<td><?php echo esc_html( isset( $row['name'] ) ? (string) $row['name'] : '' ); ?></td>
+							<td><?php echo esc_html( isset( $row['phone'] ) ? (string) $row['phone'] : '' ); ?></td>
+							<td><?php echo esc_html( isset( $row['service'] ) ? (string) $row['service'] : '' ); ?></td>
+							<td><?php echo esc_html( $property_type ); ?></td>
+							<td><?php echo esc_html( isset( $row['booking_date'] ) ? (string) $row['booking_date'] : '' ); ?></td>
+							<td><?php echo esc_html( isset( $row['status'] ) ? (string) $row['status'] : '' ); ?></td>
+							<td><?php echo esc_html( isset( $row['created_at'] ) ? (string) $row['created_at'] : '' ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+				<?php endif; ?>
+			</tbody>
+		</table>
+	</div>
+	<?php
+}
