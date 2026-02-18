@@ -177,6 +177,10 @@ function hc_booking_shortcode() {
             </select>
         </p>
 
+        <div id="helio-total-wrapper" style="margin-top:15px;font-weight:800;font-size:20px;">
+          Estimated Total: RD$0
+        </div>
+
         <p>
             <label for="hc_property_type"><?php esc_html_e('Property Type', 'helio-cleaning-booking'); ?></label><br>
             <select id="hc_property_type" name="hc_property_type" required>
@@ -196,6 +200,38 @@ function hc_booking_shortcode() {
             <button type="submit" name="hc_booking_submit" value="1"><?php esc_html_e('Submit Booking', 'helio-cleaning-booking'); ?></button>
         </p>
     </form>
+
+    <script>
+        (function () {
+            const serviceSelect = document.getElementById('helio_service');
+            const totalWrapper = document.getElementById('helio-total-wrapper');
+
+            function formatRD(amount) {
+              return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
+
+            function updateTotal() {
+                if (!serviceSelect || !totalWrapper) {
+                    return;
+                }
+
+                const selectedValue = serviceSelect.value || '';
+                const parts = selectedValue.split('|');
+                const price = parts.length > 1 ? parseFloat(parts[0]) : 0;
+                const safePrice = Number.isFinite(price) ? price : 0;
+
+                if (safePrice === 0) {
+                    totalWrapper.textContent = 'Custom Quote — We Will Contact You';
+                    return;
+                }
+
+                totalWrapper.textContent = 'Estimated Total: RD$' + formatRD(Math.round(safePrice));
+            }
+
+            serviceSelect.addEventListener('change', updateTotal);
+            updateTotal();
+        })();
+    </script>
     <?php
 
     return ob_get_clean();
@@ -271,7 +307,7 @@ function hc_booking_render_bookings_page() {
                             <td><?php echo esc_html($booking->phone); ?></td>
                             <td><?php echo esc_html($booking->service); ?></td>
                             <td><?php echo esc_html($booking->property_type); ?></td>
-                            <td><?php echo esc_html(number_format((float) $booking->price, 2)); ?></td>
+                            <td><?php echo esc_html('RD$' . number_format((float) $booking->price, 0, '.', ',')); ?></td>
                             <td>
                                 <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                                     <input type="hidden" name="action" value="hc_update_booking_status">
