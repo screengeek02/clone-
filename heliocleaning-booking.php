@@ -59,7 +59,7 @@ function helio_cleaning_test_plugin_shortcode() {
 	$table_name = $wpdb->prefix . 'hc_bookings';
 	$message    = '';
 
-	if ( 'POST' === $_SERVER['REQUEST_METHOD'] && isset( $_POST['helio_booking_submit'] ) ) {
+	if ( isset( $_POST['helio_submit'] ) ) {
 		$client_name   = isset( $_POST['helio_client_name'] ) ? sanitize_text_field( wp_unslash( $_POST['helio_client_name'] ) ) : '';
 		$phone         = isset( $_POST['helio_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['helio_phone'] ) ) : '';
 		$service_type  = isset( $_POST['helio_service_type'] ) ? sanitize_text_field( wp_unslash( $_POST['helio_service_type'] ) ) : '';
@@ -112,7 +112,7 @@ function helio_cleaning_test_plugin_shortcode() {
 	$output .= '<label style="font-weight:600;">' . esc_html__( 'Service Type', 'helio-cleaning-test-plugin' ) . ' <select name="helio_service_type" required style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;"><option value="Standard Cleaning">' . esc_html__( 'Standard Cleaning', 'helio-cleaning-test-plugin' ) . '</option><option value="Deep Cleaning">' . esc_html__( 'Deep Cleaning', 'helio-cleaning-test-plugin' ) . '</option><option value="Villa Cleaning">' . esc_html__( 'Villa Cleaning', 'helio-cleaning-test-plugin' ) . '</option></select></label>';
 	$output .= '<label style="font-weight:600;">' . esc_html__( 'Property Type', 'helio-cleaning-test-plugin' ) . ' <select name="helio_property_type" required style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;"><option value="Apartment">' . esc_html__( 'Apartment', 'helio-cleaning-test-plugin' ) . '</option><option value="Villa">' . esc_html__( 'Villa', 'helio-cleaning-test-plugin' ) . '</option></select></label>';
 	$output .= '<label style="font-weight:600;">' . esc_html__( 'Booking Date', 'helio-cleaning-test-plugin' ) . ' <input type="date" name="helio_booking_date" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;" /></label>';
-	$output .= '<button type="submit" name="helio_booking_submit" value="1" style="background:#2563eb;color:#fff;padding:10px 14px;border:0;border-radius:6px;font-weight:600;cursor:pointer;">' . esc_html__( 'Submit Booking', 'helio-cleaning-test-plugin' ) . '</button>';
+	$output .= '<button type="submit" name="helio_submit" value="1" style="background:#2563eb;color:#fff;padding:10px 14px;border:0;border-radius:6px;font-weight:600;cursor:pointer;">' . esc_html__( 'Submit Booking', 'helio-cleaning-test-plugin' ) . '</button>';
 	$output .= '</form></div>';
 
 	return $output;
