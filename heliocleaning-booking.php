@@ -177,7 +177,7 @@ function helio_cleaning_test_plugin_handle_insert_booking() {
 
 	global $wpdb;
 
-	$table_name = 'hc_bookings';
+	$table_name = $wpdb->prefix . 'hc_bookings';
 	$inserted   = $wpdb->query( "INSERT INTO `{$table_name}` () VALUES ()" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.NotPrepared
 	$status     = false !== $inserted ? 'success' : 'error';
 
@@ -206,7 +206,7 @@ function helio_cleaning_insert_booking( $data ) {
 
 	global $wpdb;
 
-	$table_name   = 'hc_bookings';
+	$table_name = $wpdb->prefix . 'hc_bookings';
 	$allowed_cols = array(
 		'name',
 		'first_name',
@@ -291,7 +291,7 @@ function helio_cleaning_test_plugin_render_bookings_page() {
 
 	global $wpdb;
 
-	$table_name = 'hc_bookings';
+	$table_name = $wpdb->prefix . 'hc_bookings';
 	$rows       = $wpdb->get_results( "SELECT * FROM `{$table_name}` ORDER BY created_at DESC", ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.NotPrepared
 	$columns    = ! empty( $rows ) ? array_keys( $rows[0] ) : array();
 	?>
@@ -333,7 +333,7 @@ function helio_cleaning_test_plugin_render_bookings_page() {
 function helio_cleaning_test_plugin_get_bookings_table_schema() {
 	global $wpdb;
 
-	$table_name      = 'hc_bookings';
+	$table_name = $wpdb->prefix . 'hc_bookings';
 	$charset_collate = $wpdb->get_charset_collate();
 
 	return "CREATE TABLE {$table_name} (
