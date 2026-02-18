@@ -80,6 +80,7 @@ function hc_booking_handle_frontend_submission() {
 
     $name = isset($_POST['hc_name']) ? sanitize_text_field(wp_unslash($_POST['hc_name'])) : '';
     $phone = isset($_POST['hc_phone']) ? sanitize_text_field(wp_unslash($_POST['hc_phone'])) : '';
+    $email = isset($_POST['hc_email']) ? sanitize_email(wp_unslash($_POST['hc_email'])) : '';
     $service = isset($_POST['hc_service']) ? sanitize_text_field(wp_unslash($_POST['hc_service'])) : '';
     $property_type = isset($_POST['hc_property_type']) ? sanitize_text_field(wp_unslash($_POST['hc_property_type'])) : '';
     $booking_date_raw = isset($_POST['hc_booking_date']) ? sanitize_text_field(wp_unslash($_POST['hc_booking_date'])) : '';
@@ -89,6 +90,10 @@ function hc_booking_handle_frontend_submission() {
 
     if (empty($name) || empty($phone) || empty($service) || empty($property_type)) {
         return array('handled' => true, 'message' => esc_html__('Please fill in all required fields.', 'helio-cleaning-booking'));
+    }
+
+    if (!empty($email) && !is_email($email)) {
+        return array('handled' => true, 'message' => esc_html__('Please enter a valid email address.', 'helio-cleaning-booking'));
     }
 
     if (!in_array($service, $valid_services, true)) {
@@ -126,18 +131,36 @@ function hc_booking_handle_frontend_submission() {
         return array('handled' => true, 'message' => esc_html__('Unable to save booking. Please try again later.', 'helio-cleaning-booking'));
     }
 
-    $email_subject = 'New Booking Received – Helio Cleaning';
-    $email_headers = array('Content-Type: text/html; charset=UTF-8');
-    $email_body =
+    $status = 'pending';
+
+    $admin_email_subject = 'New Booking Received – Helio Cleaning';
+    $admin_email_headers = array('Content-Type: text/html; charset=UTF-8');
+    $admin_email_body =
         '<h2>New Booking Received</h2>' .
         '<p><strong>Client Name:</strong> ' . esc_html($name) . '</p>' .
         '<p><strong>Phone:</strong> ' . esc_html($phone) . '</p>' .
+        '<p><strong>Email:</strong> ' . esc_html($email) . '</p>' .
         '<p><strong>Service:</strong> ' . esc_html($service) . '</p>' .
         '<p><strong>Property Type:</strong> ' . esc_html($property_type) . '</p>' .
         '<p><strong>Booking Date:</strong> ' . esc_html((string) $booking_date) . '</p>' .
-        '<p><strong>Status:</strong> pending</p>';
+        '<p><strong>Status:</strong> ' . esc_html($status) . '</p>';
 
-    wp_mail('info@heliocleaning.com', $email_subject, $email_body, $email_headers);
+    wp_mail('info@heliocleaning.com', $admin_email_subject, $admin_email_body, $admin_email_headers);
+
+    if (!empty($email) && is_email($email)) {
+        $customer_email_subject = 'Your Cleaning Booking Is Received – Helio Cleaning';
+        $customer_email_headers = array('Content-Type: text/html; charset=UTF-8');
+        $customer_email_body =
+            '<h2>Your Booking Has Been Received</h2>' .
+            '<p>Hi ' . esc_html($name) . ',</p>' .
+            '<p>Thank you for booking with Helio Cleaning. Here are your booking details:</p>' .
+            '<p><strong>Service:</strong> ' . esc_html($service) . '</p>' .
+            '<p><strong>Property Type:</strong> ' . esc_html($property_type) . '</p>' .
+            '<p><strong>Booking Date:</strong> ' . esc_html((string) $booking_date) . '</p>' .
+            '<p>If you need any updates, contact us on WhatsApp: <strong>+1 809 840 8313</strong></p>';
+
+        wp_mail($email, $customer_email_subject, $customer_email_body, $customer_email_headers);
+    }
 
     wp_safe_redirect('https://heliocleaning.com/thank-you/');
     exit;
@@ -163,6 +186,11 @@ function hc_booking_shortcode() {
         <p>
             <label for="hc_phone"><?php esc_html_e('Phone', 'helio-cleaning-booking'); ?></label><br>
             <input type="text" id="hc_phone" name="hc_phone" required>
+        </p>
+
+        <p>
+            <label for="hc_email"><?php esc_html_e('Email', 'helio-cleaning-booking'); ?></label><br>
+            <input type="email" id="hc_email" name="hc_email">
         </p>
 
         <p>
