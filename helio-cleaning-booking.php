@@ -126,7 +126,7 @@ function hc_booking_handle_frontend_submission() {
         return array('handled' => true, 'message' => esc_html__('Unable to save booking. Please try again later.', 'helio-cleaning-booking'));
     }
 
-    wp_safe_redirect(home_url('/thank-you/'));
+    wp_safe_redirect('https://heliocleaning.com/thank-you/');
     exit;
 }
 
