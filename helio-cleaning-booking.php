@@ -126,6 +126,19 @@ function hc_booking_handle_frontend_submission() {
         return array('handled' => true, 'message' => esc_html__('Unable to save booking. Please try again later.', 'helio-cleaning-booking'));
     }
 
+    $email_subject = 'New Booking Received – Helio Cleaning';
+    $email_headers = array('Content-Type: text/html; charset=UTF-8');
+    $email_body =
+        '<h2>New Booking Received</h2>' .
+        '<p><strong>Client Name:</strong> ' . esc_html($name) . '</p>' .
+        '<p><strong>Phone:</strong> ' . esc_html($phone) . '</p>' .
+        '<p><strong>Service:</strong> ' . esc_html($service) . '</p>' .
+        '<p><strong>Property Type:</strong> ' . esc_html($property_type) . '</p>' .
+        '<p><strong>Booking Date:</strong> ' . esc_html((string) $booking_date) . '</p>' .
+        '<p><strong>Status:</strong> pending</p>';
+
+    wp_mail('info@heliocleaning.com', $email_subject, $email_body, $email_headers);
+
     wp_safe_redirect('https://heliocleaning.com/thank-you/');
     exit;
 }
