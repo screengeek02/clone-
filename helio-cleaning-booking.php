@@ -31,7 +31,7 @@ function hc_booking_activate() {
         service varchar(191) NOT NULL,
         property_type varchar(191) NOT NULL,
         booking_date date NULL,
-        price decimal(10,2) NOT NULL DEFAULT 0.00,
+        price varchar(50) NOT NULL DEFAULT '',
         status varchar(50) NOT NULL DEFAULT 'pending',
         created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY  (id)
@@ -71,15 +71,16 @@ function hc_booking_get_statuses() {
 
 function hc_booking_parse_service_value($raw_service) {
     $parts = explode('|', $raw_service, 2);
+
     if (count($parts) !== 2) {
-        return array('price' => 0.0, 'service_name' => '');
+        return false;
     }
 
-    $base_price = is_numeric($parts[0]) ? (float) $parts[0] : 0.0;
+    $price = sanitize_text_field($parts[0]);
     $service_name = sanitize_text_field($parts[1]);
 
     return array(
-        'price' => $base_price,
+        'price' => $price,
         'service_name' => $service_name,
     );
 }
@@ -97,17 +98,17 @@ function hc_booking_handle_frontend_submission() {
         return array('handled' => true, 'message' => esc_html__('Security check failed. Please try again.', 'helio-cleaning-booking'));
     }
 
-    $name = isset($_POST['hc_name']) ? sanitize_text_field(wp_unslash($_POST['hc_name'])) : '';
+    $client_name = isset($_POST['hc_name']) ? sanitize_text_field(wp_unslash($_POST['hc_name'])) : '';
     $phone = isset($_POST['hc_phone']) ? sanitize_text_field(wp_unslash($_POST['hc_phone'])) : '';
     $email = isset($_POST['hc_email']) ? sanitize_email(wp_unslash($_POST['hc_email'])) : '';
-    $service_raw = isset($_POST['hc_service']) ? sanitize_text_field(wp_unslash($_POST['hc_service'])) : '';
+    $raw_service = isset($_POST['helio_service']) ? sanitize_text_field(wp_unslash($_POST['helio_service'])) : '';
     $property_type = isset($_POST['hc_property_type']) ? sanitize_text_field(wp_unslash($_POST['hc_property_type'])) : '';
     $booking_date_raw = isset($_POST['hc_booking_date']) ? sanitize_text_field(wp_unslash($_POST['hc_booking_date'])) : '';
 
     $valid_services = hc_booking_get_services();
     $valid_property_types = hc_booking_get_property_types();
 
-    if (empty($name) || empty($phone) || empty($service_raw) || empty($property_type)) {
+    if (empty($client_name) || empty($phone) || empty($raw_service) || empty($property_type)) {
         return array('handled' => true, 'message' => esc_html__('Please fill in all required fields.', 'helio-cleaning-booking'));
     }
 
@@ -115,7 +116,7 @@ function hc_booking_handle_frontend_submission() {
         return array('handled' => true, 'message' => esc_html__('Please enter a valid email address.', 'helio-cleaning-booking'));
     }
 
-    if (!in_array($service_raw, $valid_services, true)) {
+    if (!in_array($raw_service, $valid_services, true)) {
         return array('handled' => true, 'message' => esc_html__('Invalid service selected.', 'helio-cleaning-booking'));
     }
 
@@ -123,12 +124,16 @@ function hc_booking_handle_frontend_submission() {
         return array('handled' => true, 'message' => esc_html__('Invalid property type selected.', 'helio-cleaning-booking'));
     }
 
-    $service_parts = hc_booking_parse_service_value($service_raw);
-    $service = $service_parts['service_name'];
-    $base_price = $service_parts['price'];
-
-    if ($service === '') {
+    $service_parts = hc_booking_parse_service_value($raw_service);
+    if ($service_parts === false) {
         return array('handled' => true, 'message' => esc_html__('Invalid service selected.', 'helio-cleaning-booking'));
+    }
+
+    $price = $service_parts['price'];
+    $service_name = $service_parts['service_name'];
+
+    if (empty($service_name)) {
+        return '<div>Service missing</div>';
     }
 
     $booking_date = null;
@@ -141,18 +146,23 @@ function hc_booking_handle_frontend_submission() {
     }
 
     global $wpdb;
+    $table_name = $wpdb->prefix . 'hc_bookings';
+
+    $insert_data = array(
+        'name' => $client_name,
+        'phone' => $phone,
+        'service' => $service_name,
+        'property_type' => $property_type,
+        'price' => $price,
+        'booking_date' => $booking_date,
+        'status' => 'pending',
+        'created_at' => current_time('mysql'),
+    );
+
     $inserted = $wpdb->insert(
-        hc_booking_get_table_name(),
-        array(
-            'name' => $name,
-            'phone' => $phone,
-            'service' => $service,
-            'property_type' => $property_type,
-            'booking_date' => $booking_date,
-            'price' => $base_price,
-            'status' => 'pending',
-        ),
-        array('%s', '%s', '%s', '%s', '%s', '%f', '%s')
+        $table_name,
+        $insert_data,
+        array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
     );
 
     if ($inserted === false) {
@@ -165,14 +175,14 @@ function hc_booking_handle_frontend_submission() {
     $admin_email_headers = array('Content-Type: text/html; charset=UTF-8');
     $admin_email_body =
         '<h2>New Booking Received</h2>' .
-        '<p><strong>Client Name:</strong> ' . esc_html($name) . '</p>' .
+        '<p><strong>Client Name:</strong> ' . esc_html($client_name) . '</p>' .
         '<p><strong>Phone:</strong> ' . esc_html($phone) . '</p>' .
         '<p><strong>Email:</strong> ' . esc_html($email) . '</p>' .
-        '<p><strong>Service:</strong> ' . esc_html($service) . '</p>' .
+        '<p><strong>Service:</strong> ' . esc_html($service_name) . '</p>' .
         '<p><strong>Property Type:</strong> ' . esc_html($property_type) . '</p>' .
         '<p><strong>Booking Date:</strong> ' . esc_html((string) $booking_date) . '</p>' .
         '<p><strong>Status:</strong> ' . esc_html($status) . '</p>' .
-        '<p><strong>Total Price:</strong> ' . (($base_price > 0) ? 'RD$ ' . esc_html(number_format((float) $base_price, 2)) : 'Custom Quote Requested') . '</p>';
+        '<p><strong>Total Price:</strong> ' . (($price !== '0' && $price !== '0.00') ? 'RD$ ' . esc_html(number_format((float) $price, 2)) : 'Custom Quote Requested') . '</p>';
 
     wp_mail('info@heliocleaning.com', $admin_email_subject, $admin_email_body, $admin_email_headers);
 
@@ -180,9 +190,9 @@ function hc_booking_handle_frontend_submission() {
         $customer_email_subject = 'Your Cleaning Booking Is Received – Helio Cleaning';
         $customer_email_headers = array('Content-Type: text/html; charset=UTF-8');
 
-        if ($base_price > 0) {
-            $whatsapp_price_text = 'Base Price: RD$ ' . number_format((float) $base_price, 2);
-            $customer_price_html = '<p><strong>Base Price:</strong> RD$ ' . esc_html(number_format((float) $base_price, 2)) . '</p>';
+        if ($price !== '0' && $price !== '0.00') {
+            $whatsapp_price_text = 'Base Price: RD$ ' . number_format((float) $price, 2);
+            $customer_price_html = '<p><strong>Base Price:</strong> RD$ ' . esc_html(number_format((float) $price, 2)) . '</p>';
         } else {
             $whatsapp_price_text = 'Office Cleaning – Custom Quote Requested';
             $customer_price_html = '<p><strong>Base Price:</strong> Custom Quote Requested</p>';
@@ -190,8 +200,8 @@ function hc_booking_handle_frontend_submission() {
 
         $whatsapp_message = rawurlencode(
             'Hello Helio Cleaning, I would like to confirm my booking. ' .
-            'Client Name: ' . $name . '. ' .
-            'Service Selected: ' . $service . '. ' .
+            'Client Name: ' . $client_name . '. ' .
+            'Service Selected: ' . $service_name . '. ' .
             $whatsapp_price_text . '. ' .
             'Booking Date: ' . (string) $booking_date
         );
@@ -200,10 +210,10 @@ function hc_booking_handle_frontend_submission() {
 
         $customer_email_body =
             '<h2>Your Booking Has Been Received</h2>' .
-            '<p>Hi ' . esc_html($name) . ',</p>' .
+            '<p>Hi ' . esc_html($client_name) . ',</p>' .
             '<p>Thank you for booking with Helio Cleaning. Here are your booking details:</p>' .
-            '<p><strong>Client Name:</strong> ' . esc_html($name) . '</p>' .
-            '<p><strong>Service:</strong> ' . esc_html($service) . '</p>' .
+            '<p><strong>Client Name:</strong> ' . esc_html($client_name) . '</p>' .
+            '<p><strong>Service:</strong> ' . esc_html($service_name) . '</p>' .
             '<p><strong>Property Type:</strong> ' . esc_html($property_type) . '</p>' .
             '<p><strong>Booking Date:</strong> ' . esc_html((string) $booking_date) . '</p>' .
             $customer_price_html .
@@ -222,8 +232,15 @@ function hc_booking_shortcode() {
 
     ob_start();
 
-    if (!empty($result['message'])) {
-        echo '<div class="hc-booking-message">' . esc_html($result['message']) . '</div>';
+    $message = '';
+    if (is_array($result) && !empty($result['message'])) {
+        $message = $result['message'];
+    } elseif (is_string($result) && $result !== '') {
+        $message = $result;
+    }
+
+    if (!empty($message)) {
+        echo '<div class="hc-booking-message">' . wp_kses_post($message) . '</div>';
     }
     ?>
     <form method="post" action="">
@@ -245,13 +262,16 @@ function hc_booking_shortcode() {
         </p>
 
         <p>
-            <label for="hc_service"><?php esc_html_e('Service', 'helio-cleaning-booking'); ?></label><br>
-            <select id="hc_service" name="hc_service" required>
+            <label for="helio_service"><?php esc_html_e('Service', 'helio-cleaning-booking'); ?></label><br>
+            <select id="helio_service" name="helio_service" required>
                 <option value=""><?php esc_html_e('Select Service', 'helio-cleaning-booking'); ?></option>
                 <?php foreach (hc_booking_get_services() as $service_option) : ?>
                     <?php
                     $service_parts = hc_booking_parse_service_value($service_option);
-                    $service_label = $service_parts['service_name'] . ' – ' . (($service_parts['price'] > 0) ? 'RD$ ' . number_format((float) $service_parts['price'], 0) : 'Custom Quote');
+                    if ($service_parts === false) {
+                        continue;
+                    }
+                    $service_label = $service_parts['service_name'] . ' – ' . (($service_parts['price'] !== '0' && $service_parts['price'] !== '0.00') ? 'RD$ ' . number_format((float) $service_parts['price'], 0) : 'Custom Quote');
                     ?>
                     <option value="<?php echo esc_attr($service_option); ?>"><?php echo esc_html($service_label); ?></option>
                 <?php endforeach; ?>
@@ -284,7 +304,7 @@ function hc_booking_shortcode() {
 
     <script>
         (function () {
-            const serviceSelect = document.getElementById('hc_service');
+            const serviceSelect = document.getElementById('helio_service');
             const basePriceInput = document.getElementById('helio_base_price');
             const liveTotal = document.getElementById('helio_live_total');
 
