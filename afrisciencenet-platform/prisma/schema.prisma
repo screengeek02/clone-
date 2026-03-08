@@ -1,0 +1,419 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  VISITOR
+  RESEARCHER
+  INSTITUTION_ADMIN
+  COUNTRY_COORDINATOR
+  SUPER_ADMIN
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  NEEDS_CHANGES
+}
+
+enum AvailabilityStatus {
+  AVAILABLE
+  LIMITED
+  MAINTENANCE
+  UNAVAILABLE
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum FundingStatus {
+  OPEN
+  CLOSED
+  ARCHIVED
+}
+
+model User {
+  id                    String              @id @default(cuid())
+  email                 String              @unique
+  passwordHash          String?
+  name                  String
+  image                 String?
+  role                  UserRole            @default(RESEARCHER)
+  emailVerified         DateTime?
+  isApproved            Boolean             @default(false)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  institutionAdminOf    Institution[]       @relation("InstitutionAdmin")
+  researcherProfile     ResearcherProfile?
+  createdEquipment      Equipment[]
+  createdFunding        FundingOpportunity[]
+  createdCollaborations CollaborationPost[]
+  bookingRequests       BookingRequest[]    @relation("RequesterBookings")
+  approvedBookings      BookingRequest[]    @relation("ApproverBookings")
+  verificationRequests  VerificationRequest[]
+  notifications         Notification[]
+  sentMessages          Message[]           @relation("MessageSender")
+  threadParticipants    MessageThreadParticipant[]
+  savedFunding          SavedFunding[]
+  auditLogs             AuditLog[]
+  searchLogs            SearchLog[]
+
+  accounts              Account[]
+  sessions              Session[]
+}
+
+model Country {
+  id            String           @id @default(cuid())
+  name          String           @unique
+  code          String           @unique
+  region        String
+  institutions  Institution[]
+  researchers   ResearcherProfile[]
+  equipment     Equipment[]
+
+  @@index([region])
+}
+
+model Discipline {
+  id            String              @id @default(cuid())
+  name          String              @unique
+  slug          String              @unique
+  researchers   ResearcherProfile[]
+  collaborations CollaborationPost[]
+}
+
+model Institution {
+  id                 String              @id @default(cuid())
+  name               String
+  slug               String              @unique
+  type               String
+  countryId          String
+  country            Country             @relation(fields: [countryId], references: [id])
+  region             String
+  city               String
+  website            String?
+  email              String?
+  phone              String?
+  address            String?
+  description        String?
+  logo               String?
+  verificationStatus VerificationStatus  @default(PENDING)
+  focalPersonUserId  String?
+  focalPerson        User?               @relation("InstitutionAdmin", fields: [focalPersonUserId], references: [id])
+  approvalStatus     ApprovalStatus      @default(PENDING)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  researchers        ResearcherProfile[]
+  equipment          Equipment[]
+  bookingRequests    BookingRequest[]
+  collaborations     CollaborationPost[]
+
+  @@index([countryId, city])
+  @@index([approvalStatus])
+}
+
+model ResearcherProfile {
+  id                          String              @id @default(cuid())
+  userId                      String              @unique
+  user                        User                @relation(fields: [userId], references: [id])
+  fullName                    String
+  slug                        String              @unique
+  title                       String?
+  institutionId               String?
+  institution                 Institution?        @relation(fields: [institutionId], references: [id])
+  countryId                   String
+  country                     Country             @relation(fields: [countryId], references: [id])
+  disciplineId                String
+  discipline                  Discipline          @relation(fields: [disciplineId], references: [id])
+  subSpecialties              String[]
+  bio                         String?
+  expertiseAreas              String[]
+  keyPublications             String[]
+  orcid                       String?
+  scholarLink                 String?
+  emailProtected              Boolean             @default(true)
+  profileImage                String?
+  availableForCollaboration   Boolean             @default(false)
+  availableForSupervision     Boolean             @default(false)
+  featured                    Boolean             @default(false)
+  verificationStatus          VerificationStatus  @default(PENDING)
+  approvalStatus              ApprovalStatus      @default(PENDING)
+  createdAt                   DateTime            @default(now())
+  updatedAt                   DateTime            @updatedAt
+
+  @@index([countryId, disciplineId])
+  @@index([featured])
+}
+
+model Equipment {
+  id                    String             @id @default(cuid())
+  title                 String
+  slug                  String             @unique
+  manufacturer          String?
+  model                 String?
+  category              String
+  institutionId         String
+  institution           Institution        @relation(fields: [institutionId], references: [id])
+  labName               String?
+  department            String?
+  countryId             String
+  country               Country            @relation(fields: [countryId], references: [id])
+  region                String?
+  city                  String?
+  description           String?
+  technicalSpecifications String?
+  yearInstalled         Int?
+  fundingSource         String?
+  availabilityStatus    AvailabilityStatus @default(AVAILABLE)
+  bookingEnabled        Boolean            @default(true)
+  bookingInstructions   String?
+  contactPersonName     String?
+  contactPersonEmail    String?
+  contactPersonPhone    String?
+  documents             String[]
+  createdByUserId       String
+  createdBy             User               @relation(fields: [createdByUserId], references: [id])
+  approvalStatus        ApprovalStatus     @default(PENDING)
+  featured              Boolean            @default(false)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  images                EquipmentImage[]
+  bookings              BookingRequest[]
+
+  @@index([countryId, category])
+  @@index([availabilityStatus, approvalStatus])
+}
+
+model EquipmentImage {
+  id          String   @id @default(cuid())
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  url         String
+  alt         String?
+  createdAt   DateTime @default(now())
+}
+
+model FundingOpportunity {
+  id                 String          @id @default(cuid())
+  title              String
+  slug               String          @unique
+  provider           String
+  fundingType        String
+  degreeLevel        String
+  fieldTags          String[]
+  countryEligibility String[]
+  regionEligibility  String[]
+  deadline           DateTime?
+  amount             String?
+  summary            String
+  description        String
+  sourceUrl          String
+  applicationProcess String?
+  status             FundingStatus   @default(OPEN)
+  featured           Boolean         @default(false)
+  createdByUserId    String
+  createdBy          User            @relation(fields: [createdByUserId], references: [id])
+  approvalStatus     ApprovalStatus  @default(PENDING)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  savedByUsers       SavedFunding[]
+
+  @@index([provider, fundingType])
+  @@index([deadline, approvalStatus])
+}
+
+model CollaborationPost {
+  id                 String         @id @default(cuid())
+  title              String
+  slug               String         @unique
+  summary            String
+  description        String
+  category           String
+  disciplineId       String?
+  discipline         Discipline?    @relation(fields: [disciplineId], references: [id])
+  institutionId      String?
+  institution        Institution?   @relation(fields: [institutionId], references: [id])
+  country            String
+  collaborationType  String
+  deadline           DateTime?
+  contactMethod      String
+  visibility         String         @default("PUBLIC")
+  createdByUserId    String
+  createdBy          User           @relation(fields: [createdByUserId], references: [id])
+  approvalStatus     ApprovalStatus @default(PENDING)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  @@index([category, collaborationType])
+}
+
+model BookingRequest {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation("RequesterBookings", fields: [userId], references: [id])
+  equipmentId     String
+  equipment       Equipment     @relation(fields: [equipmentId], references: [id])
+  institutionId   String
+  institution     Institution   @relation(fields: [institutionId], references: [id])
+  requestType     String
+  requestedStart  DateTime
+  requestedEnd    DateTime
+  purpose         String
+  projectTitle    String?
+  notes           String?
+  status          BookingStatus @default(PENDING)
+  decisionNotes   String?
+  approvedById    String?
+  approvedBy      User?         @relation("ApproverBookings", fields: [approvedById], references: [id])
+  createdAt       DateTime      @default(now())
+
+  @@index([status, requestedStart])
+}
+
+model MessageThread {
+  id            String                     @id @default(cuid())
+  subject       String
+  createdAt     DateTime                   @default(now())
+  updatedAt     DateTime                   @updatedAt
+  messages      Message[]
+  participants  MessageThreadParticipant[]
+}
+
+model MessageThreadParticipant {
+  id          String        @id @default(cuid())
+  threadId    String
+  thread      MessageThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  unreadCount Int           @default(0)
+
+  @@unique([threadId, userId])
+}
+
+model Message {
+  id          String        @id @default(cuid())
+  threadId    String
+  thread      MessageThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  senderId    String
+  sender      User          @relation("MessageSender", fields: [senderId], references: [id])
+  body        String
+  status      String        @default("SENT")
+  createdAt   DateTime      @default(now())
+}
+
+model SavedFunding {
+  id          String              @id @default(cuid())
+  userId      String
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fundingId   String
+  funding     FundingOpportunity  @relation(fields: [fundingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime            @default(now())
+
+  @@unique([userId, fundingId])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  action      String
+  entityType  String
+  entityId    String
+  details     String?
+  createdAt   DateTime @default(now())
+
+  @@index([entityType, entityId])
+}
+
+model SearchLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  query       String
+  filters     Json?
+  resultCount Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([query])
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  body        String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([userId, isRead])
+}
+
+model VerificationRequest {
+  id              String           @id @default(cuid())
+  userId          String
+  user            User             @relation(fields: [userId], references: [id])
+  entityType      String
+  entityId        String
+  status          ApprovalStatus   @default(PENDING)
+  reviewerNotes   String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
