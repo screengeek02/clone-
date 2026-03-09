@@ -1,24 +1,33 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { bookingRequestSchema } from '@/lib/validation/schemas';
-import { prisma } from '@/lib/db/prisma';
-import { auth } from '@/lib/auth/auth';
+import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth/auth";
+import { prisma } from "@/lib/db/prisma";
 
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
+
   const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const payload = await request.json();
-  const parsed = bookingRequestSchema.safeParse(payload);
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+  if (!session || !session.user || !session.user.id) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  const body = await req.json();
 
   const booking = await prisma.bookingRequest.create({
     data: {
-      ...parsed.data,
-      requestedStart: new Date(parsed.data.requestedStart),
-      requestedEnd: new Date(parsed.data.requestedEnd),
-      userId: session.user.id
+      userId: session.user.id,
+      equipmentId: body.equipmentId,
+      institutionId: body.institutionId,
+      requestType: body.requestType,
+      purpose: body.purpose,
+      projectTitle: body.projectTitle ?? null,
+      notes: body.notes ?? null,
+      requestedStart: new Date(body.requestedStart),
+      requestedEnd: new Date(body.requestedEnd)
     }
   });
 
-  return NextResponse.json(booking, { status: 201 });
+  return NextResponse.json(booking);
 }
