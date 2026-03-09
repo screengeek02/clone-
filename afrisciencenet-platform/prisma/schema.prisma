@@ -153,10 +153,10 @@ model ResearcherProfile {
   country                     Country             @relation(fields: [countryId], references: [id])
   disciplineId                String
   discipline                  Discipline          @relation(fields: [disciplineId], references: [id])
-  subSpecialties              String[]
+  subSpecialties              Json?
   bio                         String?
-  expertiseAreas              String[]
-  keyPublications             String[]
+  expertiseAreas              Json?
+  keyPublications             Json?
   orcid                       String?
   scholarLink                 String?
   emailProtected              Boolean             @default(true)
@@ -239,9 +239,9 @@ model FundingOpportunity {
   provider           String
   fundingType        String
   degreeLevel        String
-  fieldTags          String[]
-  countryEligibility String[]
-  regionEligibility  String[]
+  fieldTags          Json?
+  countryEligibility Json?
+  regionEligibility  Json?
   deadline           DateTime?
   amount             String?
   summary            String
@@ -303,7 +303,7 @@ model Project {
   status            String
   teamSize          Int?
   fundingSource     String?
-  equipmentNeeded   String[]
+  equipmentNeeded   Json?
   startDate         DateTime?
   endDate           DateTime?
   createdByUserId   String
@@ -327,7 +327,7 @@ model Dataset {
   repositoryUrl      String
   fileFormat         String?
   size               String?
-  keywords           String[]
+  keywords           Json?
   contactEmail       String?
   createdByUserId    String
   createdBy          User           @relation(fields: [createdByUserId], references: [id])
