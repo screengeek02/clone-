@@ -67,6 +67,8 @@ model User {
   createdEquipment      Equipment[]
   createdFunding        FundingOpportunity[]
   createdCollaborations CollaborationPost[]
+  createdProjects       Project[]
+  createdDatasets       Dataset[]
   bookingRequests       BookingRequest[]    @relation("RequesterBookings")
   approvedBookings      BookingRequest[]    @relation("ApproverBookings")
   verificationRequests  VerificationRequest[]
@@ -89,6 +91,9 @@ model Country {
   institutions  Institution[]
   researchers   ResearcherProfile[]
   equipment     Equipment[]
+  collaborations CollaborationPost[]
+  projects      Project[]
+  datasets      Dataset[]
 
   @@index([region])
 }
@@ -99,6 +104,7 @@ model Discipline {
   slug          String              @unique
   researchers   ResearcherProfile[]
   collaborations CollaborationPost[]
+  projects      Project[]
 }
 
 model Institution {
@@ -127,6 +133,8 @@ model Institution {
   equipment          Equipment[]
   bookingRequests    BookingRequest[]
   collaborations     CollaborationPost[]
+  projectsLed        Project[]           @relation("LeadInstitution")
+  datasetsOwned      Dataset[]           @relation("OwnerInstitution")
 
   @@index([countryId, city])
   @@index([approvalStatus])
@@ -158,6 +166,7 @@ model ResearcherProfile {
   featured                    Boolean             @default(false)
   verificationStatus          VerificationStatus  @default(PENDING)
   approvalStatus              ApprovalStatus      @default(PENDING)
+  createdByUserId             String
   createdAt                   DateTime            @default(now())
   updatedAt                   DateTime            @updatedAt
 
@@ -190,7 +199,6 @@ model Equipment {
   contactPersonName     String?
   contactPersonEmail    String?
   contactPersonPhone    String?
-  documents             String[]
   createdByUserId       String
   createdBy             User               @relation(fields: [createdByUserId], references: [id])
   approvalStatus        ApprovalStatus     @default(PENDING)
@@ -199,6 +207,7 @@ model Equipment {
   updatedAt             DateTime           @updatedAt
 
   images                EquipmentImage[]
+  documents             EquipmentDocument[]
   bookings              BookingRequest[]
 
   @@index([countryId, category])
@@ -206,12 +215,21 @@ model Equipment {
 }
 
 model EquipmentImage {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   equipmentId String
   equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
   url         String
   alt         String?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
+}
+
+model EquipmentDocument {
+  id          String    @id @default(cuid())
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  url         String
+  fileType    String?
+  createdAt   DateTime  @default(now())
 }
 
 model FundingOpportunity {
@@ -255,7 +273,8 @@ model CollaborationPost {
   discipline         Discipline?    @relation(fields: [disciplineId], references: [id])
   institutionId      String?
   institution        Institution?   @relation(fields: [institutionId], references: [id])
-  country            String
+  countryId          String
+  country            Country        @relation(fields: [countryId], references: [id])
   collaborationType  String
   deadline           DateTime?
   contactMethod      String
@@ -267,6 +286,54 @@ model CollaborationPost {
   updatedAt          DateTime       @updatedAt
 
   @@index([category, collaborationType])
+}
+
+model Project {
+  id                String         @id @default(cuid())
+  title             String
+  slug              String         @unique
+  summary           String
+  description       String
+  leadInstitutionId String
+  leadInstitution   Institution    @relation("LeadInstitution", fields: [leadInstitutionId], references: [id])
+  countryId         String
+  country           Country        @relation(fields: [countryId], references: [id])
+  disciplineId      String
+  discipline        Discipline     @relation(fields: [disciplineId], references: [id])
+  status            String
+  teamSize          Int?
+  fundingSource     String?
+  equipmentNeeded   String[]
+  startDate         DateTime?
+  endDate           DateTime?
+  createdByUserId   String
+  createdBy         User           @relation(fields: [createdByUserId], references: [id])
+  approvalStatus    ApprovalStatus @default(PENDING)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+}
+
+model Dataset {
+  id                 String         @id @default(cuid())
+  title              String
+  slug               String         @unique
+  summary            String
+  description        String
+  ownerInstitutionId String
+  ownerInstitution   Institution    @relation("OwnerInstitution", fields: [ownerInstitutionId], references: [id])
+  countryId          String
+  country            Country        @relation(fields: [countryId], references: [id])
+  license            String
+  repositoryUrl      String
+  fileFormat         String?
+  size               String?
+  keywords           String[]
+  contactEmail       String?
+  createdByUserId    String
+  createdBy          User           @relation(fields: [createdByUserId], references: [id])
+  approvalStatus     ApprovalStatus @default(PENDING)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
 }
 
 model BookingRequest {
@@ -288,6 +355,7 @@ model BookingRequest {
   approvedById    String?
   approvedBy      User?         @relation("ApproverBookings", fields: [approvedById], references: [id])
   createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@index([status, requestedStart])
 }
@@ -324,12 +392,12 @@ model Message {
 }
 
 model SavedFunding {
-  id          String              @id @default(cuid())
+  id          String             @id @default(cuid())
   userId      String
-  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   fundingId   String
-  funding     FundingOpportunity  @relation(fields: [fundingId], references: [id], onDelete: Cascade)
-  createdAt   DateTime            @default(now())
+  funding     FundingOpportunity @relation(fields: [fundingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime           @default(now())
 
   @@unique([userId, fundingId])
 }
@@ -372,19 +440,19 @@ model Notification {
 }
 
 model VerificationRequest {
-  id              String           @id @default(cuid())
+  id              String         @id @default(cuid())
   userId          String
-  user            User             @relation(fields: [userId], references: [id])
+  user            User           @relation(fields: [userId], references: [id])
   entityType      String
   entityId        String
-  status          ApprovalStatus   @default(PENDING)
+  status          ApprovalStatus @default(PENDING)
   reviewerNotes   String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
 
 model Account {
-  id                String  @id @default(cuid())
+  id                String @id @default(cuid())
   userId            String
   type              String
   provider          String
