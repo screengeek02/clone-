@@ -1,20 +1,59 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/auth';
-import { prisma } from '@/lib/db/prisma';
+import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth/auth";
+import { prisma } from "@/lib/db/prisma";
 
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
+
   const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const payload = await request.json();
-  const { threadId, recipientId, subject, body } = payload as { threadId?: string; recipientId?: string; subject?: string; body: string };
-
-  let finalThreadId = threadId;
-  if (!finalThreadId) {
-    const created = await prisma.messageThread.create({ data: { subject: subject ?? 'New Conversation', participants: { create: [{ userId: session.user.id }, { userId: recipientId! }] } } });
-    finalThreadId = created.id;
+  if (!session || !session.user || !session.user.id) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
   }
 
-  const message = await prisma.message.create({ data: { threadId: finalThreadId, senderId: session.user.id, body } });
-  return NextResponse.json(message, { status: 201 });
+  const body = await req.json();
+
+  const {
+    threadId,
+    recipientId,
+    subject,
+    content
+  } = body;
+
+  if (!recipientId) {
+    return NextResponse.json(
+      { error: "Recipient required" },
+      { status: 400 }
+    );
+  }
+
+  let finalThreadId = threadId;
+
+  if (!finalThreadId) {
+    const createdThread = await prisma.messageThread.create({
+      data: {
+        subject: subject ?? "New Conversation",
+        participants: {
+          create: [
+            { userId: session.user.id },
+            { userId: recipientId }
+          ]
+        }
+      }
+    });
+
+    finalThreadId = createdThread.id;
+  }
+
+  const message = await prisma.message.create({
+    data: {
+      threadId: finalThreadId,
+      senderId: session.user.id,
+      body: content
+    }
+  });
+
+  return NextResponse.json(message);
 }
