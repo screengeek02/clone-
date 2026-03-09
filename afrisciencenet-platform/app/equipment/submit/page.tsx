@@ -1,4 +1,5 @@
-import { prisma } from '@/lib/db/prisma';
+export const dynamic = "force-dynamic";
+import { prisma } from '@/lib/prisma';
 import { SubmitEquipmentForm } from '@/components/forms/submit-equipment-form';
 
 export default async function SubmitEquipmentPage() {

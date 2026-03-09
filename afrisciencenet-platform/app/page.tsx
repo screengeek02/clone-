@@ -1,4 +1,5 @@
-import { prisma } from '@/lib/db/prisma';
+export const dynamic = "force-dynamic";
+import { prisma } from '@/lib/prisma';
 import { HomeHero } from '@/components/sections/home-hero';
 import { FeatureCard } from '@/components/cards/feature-card';
 import { EquipmentCard } from '@/components/cards/equipment-card';

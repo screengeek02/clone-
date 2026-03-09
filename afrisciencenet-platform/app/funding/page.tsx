@@ -1,4 +1,5 @@
-import { prisma } from '@/lib/db/prisma';
+export const dynamic = "force-dynamic";
+import { prisma } from '@/lib/prisma';
 
 export default async function FundingPage() {
   const opportunities = await prisma.fundingOpportunity.findMany({ where: { approvalStatus: 'APPROVED' }, orderBy: { deadline: 'asc' } });

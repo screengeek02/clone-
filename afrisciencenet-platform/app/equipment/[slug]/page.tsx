@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db/prisma';
+import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 
 export default async function EquipmentDetailPage({ params }: { params: { slug: string } }) {

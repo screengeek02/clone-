@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db/prisma';
+import { prisma } from '@/lib/prisma';
 
 export async function runGlobalSearch(query: string) {
   const q = query.trim();

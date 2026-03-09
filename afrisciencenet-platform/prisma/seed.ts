@@ -1,7 +1,6 @@
-import { PrismaClient, UserRole, ApprovalStatus, AvailabilityStatus, FundingStatus } from '@prisma/client';
+import { UserRole, ApprovalStatus, AvailabilityStatus, FundingStatus } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
 
 async function main() {
   const passwordHash = await bcrypt.hash('ChangeMe123!', 10);

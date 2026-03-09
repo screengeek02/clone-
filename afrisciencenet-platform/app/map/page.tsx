@@ -1,4 +1,5 @@
-import { prisma } from '@/lib/db/prisma';
+export const dynamic = "force-dynamic";
+import { prisma } from '@/lib/prisma';
 
 export default async function MapPage() {
   const institutions = await prisma.institution.findMany({ where: { approvalStatus: 'APPROVED' }, select: { id: true, name: true, city: true, region: true } });

@@ -1,4 +1,5 @@
-import { prisma } from '@/lib/db/prisma';
+export const dynamic = "force-dynamic";
+import { prisma } from '@/lib/prisma';
 import { ResearcherCard } from '@/components/cards/researcher-card';
 
 export default async function ResearchersPage() {
