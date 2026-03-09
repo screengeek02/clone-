@@ -1,16 +1,16 @@
-const { createServer } = require('http');
-const next = require('next');
+const { createServer } = require("http");
+const next = require("next");
 
-const port = parseInt(process.env.PORT || '3000', 10);
+const port = process.env.PORT || 3000;
 const dev = false;
 
-const app = next({ dev, hostname: '0.0.0.0', port });
+const app = next({ dev });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
   createServer((req, res) => {
     handle(req, res);
-  }).listen(port, '0.0.0.0', () => {
-    console.log(`AfriScienceNet running on port ${port}`);
+  }).listen(port, () => {
+    console.log(`Server running on port ${port}`);
   });
 });

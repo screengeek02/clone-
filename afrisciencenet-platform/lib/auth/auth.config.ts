@@ -1,24 +1,48 @@
-import type { NextAuthConfig } from 'next-auth';
+import type { NextAuthConfig } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 
 export const authConfig: NextAuthConfig = {
-  pages: { signIn: '/login' },
+  providers: [
+    Credentials({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+
+      async authorize(credentials) {
+        if (!credentials) return null;
+
+        const email = credentials.email as string | undefined;
+
+        if (!email) return null;
+
+        return {
+          id: "temp-user",
+          email: email,
+          name: "Research User",
+        };
+      }
+    })
+  ],
+
+  pages: {
+    signIn: "/login"
+  },
+
   callbacks: {
-    authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user;
-      const isDashboard = nextUrl.pathname.startsWith('/dashboard');
-      if (isDashboard) return isLoggedIn;
-      return true;
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = (user as any).role ?? "RESEARCHER";
+      }
+      return token;
     },
-    session({ session, token }) {
+
+    async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.sub as string;
-        session.user.role = token.role as string;
+        (session.user as any).role = token.role ?? "RESEARCHER";
       }
       return session;
-    },
-    jwt({ token, user }) {
-      if (user) token.role = (user as { role?: string }).role ?? 'VISITOR';
-      return token;
     }
   }
 };
