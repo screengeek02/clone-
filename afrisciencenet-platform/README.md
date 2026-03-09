@@ -56,5 +56,10 @@ This is a **fully independent Next.js + Node.js platform** and not a WordPress p
 - Docker-compatible with Node 20+
 - Vercel + managed Postgres
 
+
+## Plesk Node.js Deployment
+- Startup file: `server.js`
+- Full step-by-step guide: `docs/plesk-nodejs-deployment.md`
+
 ## Migration Guidance
 See `docs/migration-from-wordpress.md` for module-by-module mapping from WordPress-era feature inventory to standalone Node routes/workflows.
