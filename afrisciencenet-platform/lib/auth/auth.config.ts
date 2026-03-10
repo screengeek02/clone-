@@ -58,7 +58,7 @@ export const authConfig: NextAuthConfig = {
         session.user.id = token.sub;
         session.user.email = token.email;
         session.user.name = token.name;
-        session.user.role = token.role;
+        session.user.role = token.role as UserRole;
       }
       return session;
     }
