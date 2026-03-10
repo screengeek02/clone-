@@ -1,0 +1,3 @@
+export default function PolicyHubPage() {
+  return <main className="mx-auto max-w-7xl px-4 py-8"><h1 className="text-3xl font-semibold text-navy">Policy Hub</h1><div className="mt-6 grid gap-4 md:grid-cols-2"><article className="card p-5"><h3 className="font-semibold">National Research Policies</h3></article><article className="card p-5"><h3 className="font-semibold">Innovation Laws</h3></article><article className="card p-5"><h3 className="font-semibold">Ethics Approval Processes</h3></article><article className="card p-5"><h3 className="font-semibold">Technology Transfer Guidelines</h3></article></div></main>;
+}
