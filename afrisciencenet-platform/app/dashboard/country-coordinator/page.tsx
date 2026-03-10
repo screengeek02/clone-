@@ -5,12 +5,15 @@ import { UserRole } from '@prisma/client';
 export default async function CountryCoordinatorDashboard() {
   await requireRole([UserRole.COUNTRY_COORDINATOR, UserRole.SUPER_ADMIN]);
 
-  const [pendingApprovals, institutionRoster, pendingVerifications, recentSubmissions] = await Promise.all([
-    prisma.equipment.count({ where: { approvalStatus: 'PENDING' } }) + prisma.project.count({ where: { approvalStatus: 'PENDING' } }),
+  const [pendingEquipment, pendingProjects, institutionRoster, pendingVerifications, recentSubmissions] = await Promise.all([
+    prisma.equipment.count({ where: { approvalStatus: 'PENDING' } }),
+    prisma.project.count({ where: { approvalStatus: 'PENDING' } }),
     prisma.institution.count(),
     prisma.verificationRequest.count({ where: { status: 'PENDING' } }),
     prisma.collaborationPost.findMany({ where: { approvalStatus: 'PENDING' }, orderBy: { createdAt: 'desc' }, take: 5, select: { id: true, title: true } })
   ]);
+
+  const pendingApprovals = pendingEquipment + pendingProjects;
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-8">
