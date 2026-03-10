@@ -1,16 +1,23 @@
-const { createServer } = require("http");
-const next = require("next");
+const { createServer } = require("http")
+const next = require("next")
 
-const port = process.env.PORT || 3000;
-const dev = false;
+process.on("uncaughtException", err => {
+  console.error("UNCAUGHT", err)
+})
 
-const app = next({ dev });
-const handle = app.getRequestHandler();
+process.on("unhandledRejection", err => {
+  console.error("REJECTION", err)
+})
+
+const dev = false
+const app = next({ dev })
+const handle = app.getRequestHandler()
 
 app.prepare().then(() => {
   createServer((req, res) => {
-    handle(req, res);
-  }).listen(port, () => {
-    console.log(`Server running on port ${port}`);
-  });
-});
+    handle(req, res)
+  }).listen(process.env.PORT || 3000, err => {
+    if (err) throw err
+    console.log("Next.js running")
+  })
+})
